@@ -1,1 +1,77 @@
 @import "tailwindcss";
+
+:root {
+  --bg: #faf8ff;
+  --bg-soft: #f8fafc;
+  --card: #ffffff;
+  --card-soft: #f3f3fc;
+  --card-muted: #ededf6;
+  --text: #191b22;
+  --muted: #434653;
+  --subtle: #737784;
+  --line: #e2e8f0;
+  --line-strong: #c3c6d5;
+  --brand: #003c90;
+  --brand-hover: #0f52ba;
+  --brand-soft: #d9e2ff;
+  --brand-muted: #b0c6ff;
+  --on-brand: #ffffff;
+  --primary: #003c90;
+  --primary-soft: #0f52ba;
+  --on-primary: #ffffff;
+  --secondary: #505f76;
+  --secondary-soft: #d0e1fb;
+  --on-secondary: #ffffff;
+  --tertiary: #732900;
+  --tertiary-soft: #993900;
+  --on-tertiary: #ffffff;
+  --info: #1d59c1;
+  --danger: #dc2626;
+  --danger-dark: #ba1a1a;
+  --danger-soft: #ffdad6;
+  --success: #166534;
+  --warning: #b45309;
+  --warning-soft: #ffdbcd;
+  --inverse: #2e3037;
+  --on-inverse: #f0f0f9;
+  --font-heading: "Public Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
+  --color-bg: var(--bg);
+  --color-bg-soft: var(--bg-soft);
+  --color-card: var(--card);
+  --color-card-soft: var(--card-soft);
+  --color-card-muted: var(--card-muted);
+  --color-text: var(--text);
+  --color-muted: var(--muted);
+  --color-subtle: var(--subtle);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-brand: var(--brand);
+  --color-brand-hover: var(--brand-hover);
+  --color-brand-soft: var(--brand-soft);
+  --color-brand-muted: var(--brand-muted);
+  --color-on-brand: var(--on-brand);
+  --color-primary: var(--primary);
+  --color-primary-soft: var(--primary-soft);
+  --color-on-primary: var(--on-primary);
+  --color-secondary: var(--secondary);
+  --color-secondary-soft: var(--secondary-soft);
+  --color-on-secondary: var(--on-secondary);
+  --color-tertiary: var(--tertiary);
+  --color-tertiary-soft: var(--tertiary-soft);
+  --color-on-tertiary: var(--on-tertiary);
+  --color-info: var(--info);
+  --color-danger: var(--danger);
+  --color-danger-dark: var(--danger-dark);
+  --color-danger-soft: var(--danger-soft);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-inverse: var(--inverse);
+  --color-on-inverse: var(--on-inverse);
+  --font-heading: var(--font-heading);
+  --font-body: var(--font-body);
+}

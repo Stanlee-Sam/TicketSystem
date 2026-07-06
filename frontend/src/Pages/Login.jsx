@@ -1,13 +1,43 @@
 import React, { useState } from "react";
 import Hero from "../assets/hero.png";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { ClipLoader } from "react-spinners";
+import { toast } from "sonner";
+
+const validationSchema = Yup.object({
+  email: Yup.string()
+    .email("Invalid email address")
+    .required("Email is required"),
+  password: Yup.string()
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .required("Password is required"),
+});
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
-  };
+  const formik = useFormik({
+    initialValues: {
+      email: "",
+      password: "",
+    },
+    validationSchema: validationSchema,
+    onSubmit: async (values, { setSubmitting, resetForm }) => {
+      try {
+        console.log(values);
+        toast.success("Login successful!");
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        resetForm();
+      } catch (error) {
+        toast.error(error);
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-4 py-8 font-body">
@@ -51,7 +81,7 @@ const Login = () => {
               </p>
             </div>
 
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-5" onSubmit={formik.handleSubmit} noValidate>
               <div className="space-y-1.5">
                 <label
                   className="text-xs font-semibold uppercase tracking-wider text-muted"
@@ -71,7 +101,12 @@ const Login = () => {
                     name="email"
                     placeholder="staff@wamahospital.org"
                     type="email"
+                    value={formik.values.email}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                    
                   />
+                  <FieldError formik={formik} name="email" />
                 </div>
               </div>
 
@@ -94,7 +129,11 @@ const Login = () => {
                     name="password"
                     placeholder="Enter your password"
                     type={showPassword ? "text" : "password"}
+                    value={formik.values.password}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
                   />
+                  <FieldError formik={formik} name="password" />
                   <button
                     aria-label="Toggle password visibility"
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-subtle transition-colors hover:text-primary"
@@ -131,9 +170,13 @@ const Login = () => {
               <button
                 className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary py-4 text-xs font-semibold uppercase tracking-wider text-on-primary shadow-sm transition-all hover:bg-primary-soft active:scale-[0.98]"
                 type="submit"
+                disabled={formik.isSubmitting}
               >
+                {formik.isSubmitting ? <ClipLoader size={20} /> : <>
                 <span>Sign In</span>
                 <LogIn className="h-4 w-4" aria-hidden="true" />
+                </>}
+                
               </button>
             </form>
           </div>
@@ -142,5 +185,49 @@ const Login = () => {
     </main>
   );
 };
+
+const SelectField = ({ formik, id, label, name, options, placeholder }) => (
+  <div className="space-y-2">
+    <label
+      className="text-xs font-semibold uppercase tracking-wider text-muted"
+      htmlFor={id}
+    >
+      {label}
+    </label>
+    <div className="relative">
+      <select
+        className="w-full appearance-none rounded-lg border border-line-strong bg-card px-4 py-3 pr-10 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
+        id={id}
+        name={name}
+        onBlur={formik.handleBlur}
+        onChange={formik.handleChange}
+        value={formik.values[name]}
+      >
+        <option disabled value="">
+          {placeholder}
+        </option>
+        {options.map(([value, text]) => (
+          <option key={value} value={value}>
+            {text}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle"
+        aria-hidden="true"
+      />
+    </div>
+    <FieldError formik={formik} name={name} />
+  </div>
+);
+
+const FieldError = ({ formik, name }) => {
+  if (!formik.touched[name] || !formik.errors[name]) {
+    return null;
+  }
+
+  return <p className="text-xs font-medium text-danger">{formik.errors[name]}</p>;
+};
+
 
 export default Login;

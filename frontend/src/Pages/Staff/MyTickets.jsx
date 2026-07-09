@@ -323,10 +323,16 @@ const TicketCard = ({ ticket }) => (
       </div>
     </div>
 
-    <div className="mt-3 flex items-center justify-end gap-1.5">
-      <IconButton label="View Details" icon={Eye} />
-      <IconButton label="Update Ticket" icon={Pencil} muted />
-    </div>
+     <div className="mt-3 grid grid-cols-2 gap-2">
+          <button className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md">
+            <Eye size={16} />
+            <span>View Details</span>
+          </button>
+          <button className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-3 py-2.5 text-sm font-semibold text-text shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:text-primary hover:shadow-md">
+            <Pencil size={16} />
+            <span>Update Ticket</span>
+          </button>
+        </div>
   </article>
 );
 

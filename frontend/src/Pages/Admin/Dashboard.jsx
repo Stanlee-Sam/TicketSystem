@@ -1,12 +1,408 @@
 import React from "react";
+import { useState } from "react";
+// import { Eye, Edit, Filter, AlertCircle, CheckCircle, Inbox, AlertTriangle, Clock, Check, Plus } from "lucide-react";
+import Sidebar from "../../Components/Sidebar";
+import {
+  Plus,
+  Inbox,
+  AlertTriangle,
+  Clock,
+  CheckCircle2,
+  Filter,
+  AlertCircle,
+  Eye,
+  Edit,
+  CheckCircle,
+  Pencil,
+  ChevronLeft,
+  ChevronRight,
+} from "lucide-react";
+
+const tickets = [
+  {
+    id: "#TK-88421",
+    title: "Epic Login Failure - Ward 4B",
+    category: "Auth Module",
+    priority: "CRITICAL",
+    priorityClass: "text-danger",
+    status: "OPEN",
+    statusClass: "bg-primary text-on-primary",
+    createdAt: "Oct 24, 2024",
+    createdTime: "08:14 AM",
+    pulse: true,
+  },
+  {
+    id: "#TK-88415",
+    title: "Printer Jam - Floor 3 Nurse Station",
+    category: "Hardware",
+    priority: "MEDIUM",
+    priorityClass: "text-warning",
+    status: "IN PROGRESS",
+    statusClass: "bg-warning-soft text-tertiary",
+    createdAt: "Oct 23, 2024",
+    createdTime: "11:45 PM",
+  },
+  {
+    id: "#TK-88409",
+    title: "VPN Connection Issues - Remote Staff",
+    category: "Networking",
+    priority: "HIGH",
+    priorityClass: "text-danger-dark",
+    status: "RESOLVED",
+    statusClass: "bg-success text-on-primary",
+    createdAt: "Oct 23, 2024",
+    createdTime: "04:30 PM",
+  },
+  {
+    id: "#TK-88390",
+    title: "Software Update - Lab Terminals",
+    category: "Maintenance",
+    priority: "LOW",
+    priorityClass: "text-primary",
+    status: "CLOSED",
+    statusClass: "bg-inverse text-on-inverse",
+    createdAt: "Oct 22, 2024",
+    createdTime: "09:12 AM",
+  },
+  {
+    id: "#TK-88432",
+    title: "New Keyboard Request - Oncology",
+    category: "Procurement",
+    priority: "LOW",
+    priorityClass: "text-primary",
+    status: "OPEN",
+    statusClass: "bg-primary text-on-primary",
+    createdAt: "Oct 24, 2024",
+    createdTime: "10:05 AM",
+  },
+];
 
 const Dashboard = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-primary mb-6">Admin Dashboard</h1>
-      <p className="text-body-lg text-secondary">
-        Admin dashboard coming soon...
-      </p>
+    <div className="min-h-screen">
+      <div className="flex min-h-screen">
+        <Sidebar />
+        <main className="flex-1 flex flex-col gap-5 p-10 overflow-y-auto bg-bg">
+          <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-end py-3">
+            <div>
+              <h1 className="text-3xl font-bold text-on-surface">
+                IT Command Center
+              </h1>
+              <p className="text-secondary">
+                Real-time status of hospital system support tickets.
+              </p>
+            </div>
+            <button className="bg-primary hover:bg-primary-container text-white font-semibold py-2.5 px-6 rounded-lg flex items-center transition-all shadow-sm active:scale-95 cursor-pointer">
+              <Plus className="h-5 w-5 mr-2" />
+              Create New Ticket
+            </button>
+          </div>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
+            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2 bg-secondary/50 rounded-lg">
+                  <Inbox className="text-primary h-6 w-6" />
+                </div>
+                <span className="font-semibold text-success">+4% from avg</span>
+              </div>
+              <p className="font-body-sm text-secondary font-semibold">
+                Open Tickets
+              </p>
+              <h2 className="font-bold text-4xl mt-1 text-on-surface">08</h2>
+            </div>
+            <div className="bg-card border-2 border-danger/20 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2 bg-danger/50 rounded-lg">
+                  <AlertTriangle className="text-danger h-6 w-6" />
+                </div>
+                <span className="font-semibold text-danger">
+                  Critical Alert
+                </span>
+              </div>
+              <p className="font-body-sm text-secondary font-semibold">
+                High Priority
+              </p>
+              <h2 className="font-bold text-4xl mt-1 text-danger">02</h2>
+            </div>
+            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2 bg-warning/10 rounded-lg">
+                  <Clock className="text-warning h-6 w-6" />
+                </div>
+                <span className="font-semibold text-warning">Active Sync</span>
+              </div>
+              <p className="font-body-sm text-secondary font-semibold">
+                In Progress
+              </p>
+              <h2 className="font-bold text-4xl mt-1 text-on-surface">12</h2>
+            </div>
+            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+              <div className="flex justify-between items-start mb-2">
+                <div className="p-2 bg-success/10 rounded-lg">
+                  <CheckCircle className="text-success h-6 w-6" />
+                </div>
+                <span className="font-semibold text-success">Target Met</span>
+              </div>
+              <p className="font-body-sm text-secondary font-semibold">
+                Resolved (24h)
+              </p>
+              <h2 className="font-bold text-4xl mt-1 text-on-surface">15</h2>
+            </div>
+          </div>
+          <div className="bg-secondary/5 border border-outline-variant rounded-xl p-4 mb-gutter flex flex-col  items-left gap-3">
+            <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
+              <div className="flex flex-row items-center gap-2">
+                <Filter className="text-outline text-sm h-4 w-4" />
+                <span className="font-label-bold text-on-surface-variant">
+                  Filter by:
+                </span>
+              </div>
+              <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
+                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                  <option>All Priorities</option>
+                  <option>Critical</option>
+                  <option>High</option>
+                  <option>Medium</option>
+                  <option>Low</option>
+                </select>
+                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                  <option>All Departments</option>
+                  <option>ER (Emergency)</option>
+                  <option>Cardiology</option>
+                  <option>Pharmacy</option>
+                  <option>Radiology</option>
+                  <option>Administration</option>
+                </select>
+                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                  <option>All Statuses</option>
+                  <option>Open</option>
+                  <option>In Progress</option>
+                  <option>Resolved</option>
+                  <option>Pending Vendor</option>
+                </select>
+              </div>
+            </div>
+            <div className="text-outline font-label-bold">
+              Showing 1-10 of 124 Results
+            </div>
+          </div>
+          <div className="overflow-hidden rounded-lg border border-line bg-card shadow-sm">
+            <div className="divide-y divide-line md:hidden">
+              {tickets.map((ticket) => (
+                <TicketCard key={ticket.id} ticket={ticket} />
+              ))}
+            </div>
+
+            <div className="hidden overflow-x-auto md:block">
+              <table className="w-full border-collapse text-left">
+                <thead className="border-b border-line bg-card-soft">
+                  <tr>
+                    {[
+                      "Ticket Title",
+                      "Priority",
+                      "Status",
+                      "Date Created",
+                      "Actions",
+                    ].map((heading) => (
+                      <th
+                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted ${
+                          ["Priority", "Status"].includes(heading)
+                            ? "text-center"
+                            : heading === "Actions"
+                              ? "text-right"
+                              : ""
+                        }`}
+                        key={heading}
+                      >
+                        {heading}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {tickets.map((ticket) => (
+                    <tr
+                      className="transition-colors hover:bg-bg-soft"
+                      key={ticket.id}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex flex-col">
+                          <span className="text-sm font-semibold text-text">
+                            {ticket.title}
+                          </span>
+                          <span className="text-xs text-subtle">
+                            ID: {ticket.id} &bull; {ticket.category}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
+                        >
+                          {ticket.pulse && (
+                            <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
+                          )}
+                          {ticket.priority}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${ticket.statusClass}`}
+                        >
+                          {ticket.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-sm text-muted">
+                        {ticket.createdAt} &bull; {ticket.createdTime}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <div className="flex items-center justify-end gap-2">
+                          <IconButton label="View Details" icon={Eye} />
+                          <IconButton
+                            label="Update Ticket"
+                            icon={Pencil}
+                            muted
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex flex-col items-center justify-between gap-4 border-t border-line bg-bg-soft px-6 py-4 sm:flex-row">
+              <span className="text-sm text-muted">
+                Showing <span className="font-bold text-text">1 - 5</span> of{" "}
+                <span className="font-bold text-text">24</span> tickets
+              </span>
+              <div className="flex items-center gap-2">
+                <PageButton disabled icon={ChevronLeft} label="Previous page" />
+                {[1, 2, 3].map((page) => (
+                  <button
+                    className={`h-8 w-8 rounded text-xs font-semibold transition-colors ${
+                      page === 1
+                        ? "bg-primary text-on-primary"
+                        : "text-muted hover:bg-card-muted"
+                    }`}
+                    key={page}
+                    type="button"
+                  >
+                    {page}
+                  </button>
+                ))}
+                <PageButton icon={ChevronRight} label="Next page" />
+              </div>
+            </div>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
+const TicketCard = ({ ticket }) => (
+  <article className="p-4 flex flex-col gap-3">
+    <div className="flex  items-start gap-3">
+      <div className="min-w-0 flex-1">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
+          {ticket.id}
+        </p>
+        <h2 className="mt-1 text-[15px] font-semibold leading-5 text-text">
+          {ticket.title}
+        </h2>
+        <p className="mt-1 text-xs text-muted">{ticket.category}</p>
+      </div>
+      <span
+        className={`ml-auto shrink-0 whitespace-nowrap rounded-full px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wider ${ticket.statusClass}`}
+      >
+        {ticket.status}
+      </span>
+    </div>
+
+    <div className="mt-4 grid grid-cols-2 gap-2">
+      <div className="rounded-lg bg-bg-soft px-3 py-3">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+          Priority
+        </p>
+        <span
+          className={`mt-1 items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
+        >
+          {ticket.pulse && (
+            <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
+          )}
+          {ticket.priority}
+        </span>
+      </div>
+      <div className="rounded-lg bg-bg-soft px-3 py-3 flex flex-col gap-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-subtle">
+          Created
+        </p>
+        <div className="flex flex-row justify-between items-center">
+          <p className="mt-1 text-xs font-medium text-text">
+            {ticket.createdAt}
+          </p>
+          <p className="text-xs text-subtle">{ticket.createdTime}</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="mt-3 grid grid-cols-2 gap-2">
+      <button className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md">
+        <Eye size={16} />
+        <span>View Details</span>
+      </button>
+      <button className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-3 py-2.5 text-sm font-semibold text-text shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:text-primary hover:shadow-md">
+        <Pencil size={16} />
+        <span>Update Ticket</span>
+      </button>
+    </div>
+  </article>
+);
+
+const IconButton = ({ icon: Icon, label, muted = false }) => (
+  <button
+    className={`rounded-lg p-2 transition-colors hover:bg-card-muted ${
+      muted
+        ? "text-muted hover:text-text"
+        : "text-primary hover:text-primary-soft"
+    }`}
+    title={label}
+    type="button"
+  >
+    <Icon className="h-5 w-5" aria-hidden="true" />
+  </button>
+);
+
+const PageButton = ({ disabled = false, icon: Icon, label }) => (
+  <button
+    aria-label={label}
+    className="rounded border border-line-strong p-1.5 text-muted transition-colors hover:bg-card-muted disabled:cursor-not-allowed disabled:opacity-50"
+    disabled={disabled}
+    type="button"
+  >
+    <Icon className="h-5 w-5" aria-hidden="true" />
+  </button>
+);
+
+const StatCard = ({ stat }) => {
+  const Icon = stat.icon;
+
+  return (
+    <div className="flex items-center gap-4 rounded-lg border border-line bg-card p-4 shadow-sm">
+      <div
+        className={`flex h-12 w-12 items-center justify-center rounded-full ${stat.iconClass}`}
+      >
+        <Icon className="h-6 w-6" aria-hidden="true" />
+      </div>
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+          {stat.label}
+        </p>
+        <p className="font-heading text-2xl font-bold text-text">
+          {stat.value}
+        </p>
+      </div>
     </div>
   );
 };

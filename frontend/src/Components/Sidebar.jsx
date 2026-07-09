@@ -22,7 +22,7 @@ export default function Sidebar() {
   };
 
   const menuItems = [
-    { icon: <Home size={20} />, label: "Dashboard",  },
+    { icon: <Home size={20} />, label: "Dashboard" },
     { icon: <BarChart2 size={20} />, label: "Analytics" },
     { icon: <Users size={20} />, label: "Team" },
     { icon: <Settings size={20} />, label: "Settings" },

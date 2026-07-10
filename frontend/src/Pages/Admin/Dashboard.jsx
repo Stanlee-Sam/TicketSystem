@@ -16,6 +16,16 @@ import {
   Pencil,
   ChevronLeft,
   ChevronRight,
+  X,
+  ChevronDown,
+  ZoomIn,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  MessageCircle,
+  Save,
+  UserCheck,
 } from "lucide-react";
 
 const tickets = [
@@ -30,6 +40,8 @@ const tickets = [
     createdAt: "Oct 24, 2024",
     createdTime: "08:14 AM",
     pulse: true,
+    description:
+      "User authentication system in Ward 4B is experiencing intermittent failures, preventing staff from logging into the patient management system. This is affecting patient care operations.",
   },
   {
     id: "#TK-88415",
@@ -41,6 +53,8 @@ const tickets = [
     statusClass: "bg-warning-soft text-tertiary",
     createdAt: "Oct 23, 2024",
     createdTime: "11:45 PM",
+    description:
+      "Printer at Floor 3 Nurse Station is jammed and requires immediate attention. Replacement toner cartridge is ready.",
   },
   {
     id: "#TK-88409",
@@ -52,6 +66,8 @@ const tickets = [
     statusClass: "bg-success text-on-primary",
     createdAt: "Oct 23, 2024",
     createdTime: "04:30 PM",
+    description:
+      "Remote staff members are experiencing unstable VPN connections affecting their ability to access patient records from home.",
   },
   {
     id: "#TK-88390",
@@ -63,6 +79,8 @@ const tickets = [
     statusClass: "bg-inverse text-on-inverse",
     createdAt: "Oct 22, 2024",
     createdTime: "09:12 AM",
+    description:
+      "Scheduled software update for lab terminals completed successfully.",
   },
   {
     id: "#TK-88432",
@@ -74,10 +92,31 @@ const tickets = [
     statusClass: "bg-primary text-on-primary",
     createdAt: "Oct 24, 2024",
     createdTime: "10:05 AM",
+    description:
+      "Ergonomic keyboard requested for Oncology department workstation.",
   },
 ];
 
 const Dashboard = () => {
+  const [selectedTicket, setSelectedTicket] = useState(null);
+  const [editingTicket, setEditingTicket] = useState(null);
+
+  const openModal = (ticket) => {
+    setSelectedTicket(ticket);
+  };
+
+  const editTicket = (ticket) => {
+    setEditingTicket(ticket);
+  }
+
+  const closeEditing = () => {
+    setEditingTicket(null);
+  }
+
+  const closeModal = () => {
+    setSelectedTicket(null);
+  };
+
   return (
     <div className="min-h-screen">
       <div className="flex min-h-screen">
@@ -85,30 +124,30 @@ const Dashboard = () => {
         <main className="flex-1 flex flex-col gap-5 p-10 overflow-y-auto bg-bg">
           <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-end py-3">
             <div>
-              <h1 className="text-3xl font-bold text-on-surface">
+              <h1 className="text-3xl font-bold text-text">
                 IT Command Center
               </h1>
               <p className="text-secondary">
                 Real-time status of hospital system support tickets.
               </p>
             </div>
-            <button className="bg-primary hover:bg-primary-container text-white font-semibold py-2.5 px-6 rounded-lg flex items-center transition-all shadow-sm active:scale-95 cursor-pointer">
+            <button className="bg-primary hover:bg-primary-soft text-white font-semibold py-2.5 px-6 rounded-lg flex items-center transition-all shadow-sm active:scale-95 cursor-pointer">
               <Plus className="h-5 w-5 mr-2" />
               Create New Ticket
             </button>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
-            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div className="p-2 bg-secondary/50 rounded-lg">
                   <Inbox className="text-primary h-6 w-6" />
                 </div>
                 <span className="font-semibold text-success">+4% from avg</span>
               </div>
-              <p className="font-body-sm text-secondary font-semibold">
+              <p className="text-sm text-secondary font-semibold">
                 Open Tickets
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-on-surface">08</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">08</h2>
             </div>
             <div className="bg-card border-2 border-danger/20 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
@@ -119,53 +158,53 @@ const Dashboard = () => {
                   Critical Alert
                 </span>
               </div>
-              <p className="font-body-sm text-secondary font-semibold">
+              <p className="text-sm text-secondary font-semibold">
                 High Priority
               </p>
               <h2 className="font-bold text-4xl mt-1 text-danger">02</h2>
             </div>
-            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div className="p-2 bg-warning/10 rounded-lg">
                   <Clock className="text-warning h-6 w-6" />
                 </div>
                 <span className="font-semibold text-warning">Active Sync</span>
               </div>
-              <p className="font-body-sm text-secondary font-semibold">
+              <p className="text-sm text-secondary font-semibold">
                 In Progress
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-on-surface">12</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">12</h2>
             </div>
-            <div className="bg-card border border-border-low p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
                 <div className="p-2 bg-success/10 rounded-lg">
                   <CheckCircle className="text-success h-6 w-6" />
                 </div>
                 <span className="font-semibold text-success">Target Met</span>
               </div>
-              <p className="font-body-sm text-secondary font-semibold">
+              <p className="text-sm text-secondary font-semibold">
                 Resolved (24h)
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-on-surface">15</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">15</h2>
             </div>
           </div>
-          <div className="bg-secondary/5 border border-outline-variant rounded-xl p-4 mb-gutter flex flex-col  items-left gap-3">
+          <div className="bg-secondary/5 border border-line rounded-xl p-4 mb-4 flex flex-col items-start gap-3">
             <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
               <div className="flex flex-row items-center gap-2">
-                <Filter className="text-outline text-sm h-4 w-4" />
-                <span className="font-label-bold text-on-surface-variant">
+                <Filter className="text-muted h-4 w-4" />
+                <span className="text-sm font-bold text-muted">
                   Filter by:
                 </span>
               </div>
               <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
-                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
                   <option>All Priorities</option>
                   <option>Critical</option>
                   <option>High</option>
                   <option>Medium</option>
                   <option>Low</option>
                 </select>
-                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
                   <option>All Departments</option>
                   <option>ER (Emergency)</option>
                   <option>Cardiology</option>
@@ -173,7 +212,7 @@ const Dashboard = () => {
                   <option>Radiology</option>
                   <option>Administration</option>
                 </select>
-                <select className="bg-card border-outline-variant rounded-lg font-body-sm focus:ring-primary focus:border-primary px-3 py-1.5">
+                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
                   <option>All Statuses</option>
                   <option>Open</option>
                   <option>In Progress</option>
@@ -182,14 +221,19 @@ const Dashboard = () => {
                 </select>
               </div>
             </div>
-            <div className="text-outline font-label-bold">
+            <div className="text-sm font-bold text-muted">
               Showing 1-10 of 124 Results
             </div>
           </div>
           <div className="overflow-hidden rounded-lg border border-line bg-card shadow-sm">
             <div className="divide-y divide-line md:hidden">
               {tickets.map((ticket) => (
-                <TicketCard key={ticket.id} ticket={ticket} />
+                <TicketCard
+                  onOpenModal={() => openModal(ticket)}
+                  onUpdateTicket={() => editTicket(ticket)}
+                  key={ticket.id}
+                  ticket={ticket}
+                />
               ))}
             </div>
 
@@ -222,8 +266,9 @@ const Dashboard = () => {
                 <tbody className="divide-y divide-line">
                   {tickets.map((ticket) => (
                     <tr
-                      className="transition-colors hover:bg-bg-soft"
+                      className="transition-colors hover:bg-bg-soft cursor-pointer"
                       key={ticket.id}
+                      onClick={() => openModal(ticket)}
                     >
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
@@ -257,11 +302,22 @@ const Dashboard = () => {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <IconButton label="View Details" icon={Eye} />
+                          <IconButton
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              openModal(ticket);
+                            }}
+                            label="View Details"
+                            icon={Eye}
+                          />
                           <IconButton
                             label="Update Ticket"
                             icon={Pencil}
                             muted
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              editTicket(ticket);
+                            }}
                           />
                         </div>
                       </td>
@@ -295,13 +351,303 @@ const Dashboard = () => {
               </div>
             </div>
           </div>
+
+          {selectedTicket && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+              <div className="flex max-h-[90vh] w-full max-w-5xl flex-col overflow-hidden rounded-lg border border-line bg-card shadow-2xl">
+                <header className="flex items-start justify-between gap-4 border-b border-line bg-card-soft px-5 py-4">
+                  <div className="min-w-0">
+                    <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-primary">
+                      {selectedTicket.id}
+                    </span>
+                    <h2 className="text-xl font-bold leading-7 text-text sm:text-2xl">
+                      {selectedTicket.title}
+                    </h2>
+                  </div>
+                  <button
+                    className="rounded-lg p-2 text-muted transition-colors hover:bg-card-muted hover:text-danger"
+                    onClick={() => closeModal()}
+                    type="button"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </header>
+                <section className="flex flex-wrap items-center gap-3 border-b border-line bg-bg-soft px-5 py-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      PRIORITY:
+                    </span>
+                    <span className={`rounded-full border border-current/20 px-2.5 py-1 text-xs font-bold ${selectedTicket.priorityClass}`}>
+                      {selectedTicket.priority}
+                    </span>
+                  </div>
+                  <div className="hidden h-4 w-px bg-line sm:block"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      STATUS:
+                    </span>
+                    <div className="relative">
+                      <select
+                        className="cursor-pointer appearance-none rounded-lg border border-line-strong bg-card py-1 pl-3 pr-8 text-xs font-bold text-primary transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
+                        defaultValue={selectedTicket.status}
+                      >
+                        <option>OPEN</option>
+                        <option>IN PROGRESS</option>
+                        <option>PENDING VENDOR</option>
+                        <option>RESOLVED</option>
+                      </select>
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none h-5 w-5" />
+                    </div>
+                  </div>
+                  <div className="hidden h-4 w-px bg-line sm:block"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      DEPT:
+                    </span>
+                    <span className="text-sm font-medium text-text">
+                      {selectedTicket.category}
+                    </span>
+                  </div>
+                  <div className="hidden h-4 w-px bg-line sm:block"></div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      CREATED:
+                    </span>
+                    <span className="text-sm font-medium text-text">
+                      {selectedTicket.createdAt}
+                    </span>
+                  </div>
+                </section>
+                <div className="flex-grow overflow-y-auto p-5">
+                  <div className="flex flex-col gap-6 md:flex-row">
+                    <div className="space-y-6 md:w-[70%]">
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
+                          Issue Description
+                        </h3>
+                        <div className="rounded-lg border border-line bg-bg-soft p-4 text-sm leading-relaxed text-text">
+                          {selectedTicket.description ||
+                            "No description provided."}
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
+                          Attached Media (1)
+                        </h3>
+                        <div className="group relative h-48 w-48 cursor-zoom-in overflow-hidden rounded-lg border border-line">
+                          <img
+                            alt="Monitor sync issue illustration"
+                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                            src="https://lh3.googleusercontent.com/aida/AP1WRLs9-57llaoX4zvt-rnyixUuvjEU2-ljT181dN4FR2Fn7EM5Hee8tkCMaxorLz5ngKLDDKtPSfQDRzQsbFdduVqLb9hROgoHbze6h4xo80_WAXYBPEx-qJy4l9ChHZl6sHVTlunHrAcYBr9A4VnA3sYIIUGMaCqElAM537KxwqTWdxzzGI7IEyygl2CwWj47PXPvipI7UdQbb9cSGKroDm5ASlxAaKjHm-W7echFgkeMEXHzX_sAGLvAjOI"
+                          />
+                          <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <ZoomIn className="text-white h-8 w-8" />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-end">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
+                            Resolution Notes
+                          </h3>
+                          <span className="text-[10px] font-semibold italic text-subtle">
+                            Auto-saving...
+                          </span>
+                        </div>
+                        <textarea
+                          className="h-40 w-full resize-none rounded-lg border border-line-strong bg-card p-4 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
+                          placeholder="Document steps taken, parts replaced, or vendor ticket IDs here..."
+                        ></textarea>
+                      </div>
+                    </div>
+                    <aside className="space-y-6 md:w-[30%]">
+                      <div className="space-y-4 rounded-lg border border-line bg-bg-soft p-4">
+                        <h3 className="border-b border-line pb-2 text-xs font-bold uppercase tracking-wider text-muted">
+                          Staff Information
+                        </h3>
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                            <User className="text-primary h-6 w-6" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="font-semibold text-text">
+                              Dr. Sarah Chen
+                            </span>
+                            <span className="text-sm text-muted">
+                              Attending Physician
+                            </span>
+                          </div>
+                        </div>
+                        <div className="space-y-2 pt-1">
+                          <div className="flex items-center gap-2 text-muted">
+                            <Mail className="h-5 w-5" />
+                            <span className="text-sm">
+                              s.chen@medtech.org
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted">
+                            <Phone className="h-5 w-5" />
+                            <span className="text-sm">
+                              Ext. 4492 (ER Hub)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2 text-muted">
+                            <MapPin className="h-5 w-5" />
+                            <span className="text-sm">
+                              Trauma Wing, Level 1
+                            </span>
+                          </div>
+                        </div>
+                        <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5">
+                          <MessageCircle className="h-5 w-5" />
+                          Message Submitter
+                        </button>
+                      </div>
+                      <div className="px-1">
+                        <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">
+                          History
+                        </h3>
+                        <div className="relative space-y-4 before:absolute before:bottom-2 before:left-2.5 before:top-2 before:w-px before:bg-line">
+                          <div className="relative pl-8">
+                            <div className="absolute left-0 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-success ring-4 ring-card">
+                              <CheckCircle className="text-white h-3 w-3" />
+                            </div>
+                            <p className="text-xs font-bold text-text">
+                              Ticket Created
+                            </p>
+                            <p className="text-[11px] text-subtle">
+                              Oct 24, 08:12 AM
+                            </p>
+                          </div>
+                          <div className="relative pl-8">
+                            <div className="absolute left-0 top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary ring-4 ring-card">
+                              <UserCheck className="text-white h-3 w-3" />
+                            </div>
+                            <p className="text-xs font-bold text-text">
+                              Assigned to Network IT
+                            </p>
+                            <p className="text-[11px] text-subtle">
+                              Oct 24, 08:45 AM
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </aside>
+                  </div>
+                </div>
+                <footer className="flex items-center justify-end gap-3 border-t border-line bg-card-soft px-5 py-4">
+                  <button
+                    className="rounded-lg border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                    onClick={closeModal}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95"
+                    type="button"
+                  >
+                    <Save className="h-5 w-5" />
+                    Save Changes
+                  </button>
+                </footer>
+              </div>
+            </div>
+          )}
+
+          {editingTicket && (
+            <div
+              onClick={closeEditing}
+              className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
+            >
+              <div
+                className="flex w-full max-w-xl flex-col overflow-hidden rounded-lg border border-line bg-card shadow-xl"
+                onClick={(event) => event.stopPropagation()}
+              >
+                <header className="flex items-start justify-between gap-4 border-b border-line bg-card-soft px-5 py-4">
+                  <div>
+                    <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-primary">
+                      {editingTicket.id}
+                    </span>
+                    <h2 className="text-xl font-bold text-text">
+                      Update Ticket
+                    </h2>
+                  </div>
+                  <button
+                    className="rounded-lg p-2 text-muted transition-colors hover:bg-card-muted hover:text-danger"
+                    onClick={closeEditing}
+                    type="button"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </header>
+
+                <div className="space-y-4 p-5">
+                  <div>
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted">
+                      Ticket
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-text">
+                      {editingTicket.title}
+                    </p>
+                    <p className="mt-1 text-xs text-subtle">
+                      {editingTicket.category} &bull; Created {editingTicket.createdAt}
+                    </p>
+                  </div>
+
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      Status
+                    </span>
+                    <select
+                      className="mt-2 w-full rounded-lg border border-line-strong bg-card px-4 py-2.5 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
+                      defaultValue={editingTicket.status}
+                    >
+                      <option>OPEN</option>
+                      <option>IN PROGRESS</option>
+                      <option>PENDING VENDOR</option>
+                      <option>RESOLVED</option>
+                      <option>CLOSED</option>
+                    </select>
+                  </label>
+
+                  <label className="block">
+                    <span className="text-xs font-bold uppercase tracking-wider text-muted">
+                      Resolution Notes
+                    </span>
+                    <textarea
+                      className="mt-2 h-32 w-full resize-none rounded-lg border border-line-strong bg-card px-4 py-3 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
+                      placeholder="Document steps taken, parts replaced, or vendor ticket IDs here..."
+                    />
+                  </label>
+                </div>
+
+                <footer className="flex justify-end gap-3 border-t border-line bg-card-soft px-5 py-4">
+                  <button
+                    className="rounded-lg border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                    onClick={closeEditing}
+                    type="button"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95"
+                    type="button"
+                  >
+                    <Save className="h-5 w-5" />
+                    Save Update
+                  </button>
+                </footer>
+              </div>
+            </div>
+          )}
         </main>
       </div>
     </div>
   );
 };
 
-const TicketCard = ({ ticket }) => (
+const TicketCard = ({ ticket, onOpenModal, onUpdateTicket }) => (
   <article className="p-4 flex flex-col gap-3">
     <div className="flex  items-start gap-3">
       <div className="min-w-0 flex-1">
@@ -348,11 +694,17 @@ const TicketCard = ({ ticket }) => (
     </div>
 
     <div className="mt-3 grid grid-cols-2 gap-2">
-      <button className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md">
+      <button
+        onClick={onOpenModal}
+        className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md"
+      >
         <Eye size={16} />
         <span>View Details</span>
       </button>
-      <button className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-3 py-2.5 text-sm font-semibold text-text shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:text-primary hover:shadow-md">
+      <button
+        onClick={onUpdateTicket}
+        className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-3 py-2.5 text-sm font-semibold text-text shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:text-primary hover:shadow-md"
+      >
         <Pencil size={16} />
         <span>Update Ticket</span>
       </button>
@@ -360,8 +712,9 @@ const TicketCard = ({ ticket }) => (
   </article>
 );
 
-const IconButton = ({ icon: Icon, label, muted = false }) => (
+const IconButton = ({ icon: Icon, label, muted = false, onClick }) => (
   <button
+    onClick={onClick}
     className={`rounded-lg p-2 transition-colors hover:bg-card-muted ${
       muted
         ? "text-muted hover:text-text"

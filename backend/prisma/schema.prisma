@@ -1,0 +1,138 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  STAFF
+  IT_ADMIN
+  ADMIN
+}
+
+enum TicketPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TicketStatus {
+  OPEN
+  IN_PROGRESS
+  PENDING_VENDOR
+  RESOLVED
+  CLOSED
+}
+
+model User {
+  id             String   @id @default(uuid())
+  fullName       String
+  email          String   @unique
+  passwordHash   String
+  role           UserRole @default(STAFF)
+  jobTitle       String?
+  phone          String?
+  extension      String?
+  location       String?
+  mustChangePass Boolean  @default(true)
+  mfaEnabled     Boolean  @default(false)
+  isActive       Boolean  @default(true)
+
+  departmentId   String?
+  department     Department? @relation(fields: [departmentId], references: [id])
+
+  submittedTickets Ticket[] @relation("SubmittedTickets")
+  assignedTickets  Ticket[] @relation("AssignedTickets")
+  updates          TicketUpdate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Department {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  users     User[]
+  tickets   Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Ticket {
+  id           String         @id @default(uuid())
+  ticketNumber String         @unique
+  title        String
+  description  String
+  priority     TicketPriority
+  status       TicketStatus   @default(OPEN)
+  category     String?
+
+  submitterId  String
+  submitter    User @relation("SubmittedTickets", fields: [submitterId], references: [id])
+
+  assigneeId   String?
+  assignee     User? @relation("AssignedTickets", fields: [assigneeId], references: [id])
+
+  departmentId String?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  attachments  TicketAttachment[]
+  updates      TicketUpdate[]
+  history      TicketStatusHistory[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resolvedAt DateTime?
+  closedAt   DateTime?
+}
+
+model TicketAttachment {
+  id        String @id @default(uuid())
+  ticketId  String
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  fileName  String
+  fileUrl   String
+  fileType  String?
+  fileSize  Int?
+
+  createdAt DateTime @default(now())
+}
+
+model TicketUpdate {
+  id        String @id @default(uuid())
+  ticketId  String
+  ticket    Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  authorId  String
+  author    User @relation(fields: [authorId], references: [id])
+
+  note      String
+  status    TicketStatus?
+
+  createdAt DateTime @default(now())
+}
+
+model TicketStatusHistory {
+  id         String @id @default(uuid())
+  ticketId   String
+  ticket     Ticket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  fromStatus TicketStatus?
+  toStatus   TicketStatus
+  changedBy  String?
+
+  createdAt DateTime @default(now())
+}

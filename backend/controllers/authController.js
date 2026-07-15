@@ -18,32 +18,37 @@ const generateAccessToken = (user) => {
 };
 
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  const user = await prisma.user.findUnique({
-    where: {
-      email: email,
-    },
-  });
+    const user = await prisma.user.findUnique({
+      where: {
+        email: email,
+      },
+    });
 
-  if (!user) {
-    return res.status(400).json({ message: "User not found" });
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    const validPassword = await bcrypt.compare(password, user.passwordHash);
+    if (!validPassword) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    const accessToken = generateAccessToken(user);
+    res.json({
+      message: "Login successful",
+      accessToken,
+      user: {
+        id: user.id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error logging in user:", error);
+    res.status(500).json({ message: "Failed to login user" });
   }
-
-  const validPassword = await bcrypt.compare(password, user.passwordHash);
-  if (!validPassword) {
-    return res.status(400).json({ message: "Invalid password" });
-  }
-
-  const accessToken = generateAccessToken(user);
-  res.json({
-    message: "Login successful",
-    accessToken,
-    user: {
-      id: user.id,
-      fullName: user.fullName,
-      email: user.email,
-      role: user.role,
-    },
-  });
 };

@@ -41,7 +41,7 @@ const CreateUser = () => {
                     className="block text-xs font-bold uppercase tracking-wider text-muted"
                     htmlFor="email"
                   >
-                    Institutional Email
+                    Email
                   </label>
                   <input
                     className="h-11 w-full rounded-lg border border-line-strong bg-card px-4 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"

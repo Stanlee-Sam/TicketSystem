@@ -1,0 +1,215 @@
+import { PrismaPg } from "@prisma/adapter-pg";
+import prismaPkg from "../generated/prisma/client.js";
+
+
+const { PrismaClient } = prismaPkg;
+
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
+
+export const createTicket = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { title, description, priority, category, images } = req.body;
+
+    if (!title || !description || !priority || !category) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const normalizedPriority = priority?.toLowerCase();
+
+    const priorityMap = {
+      low: "LOW",
+      medium: "MEDIUM",
+      high: "HIGH",
+      critical: "CRITICAL",
+    };
+
+    const finalPriority = priorityMap[normalizedPriority] || "MEDIUM";
+
+    const normalizedCategory = category?.toLowerCase();
+
+    const categoryMap = {
+      software: "SOFTWARE",
+      hardware: "HARDWARE",
+      network: "NETWORK",
+      printer: "PRINTER",
+      email: "EMAIL",
+      other: "OTHER",
+      access: "OTHER",
+    };
+
+    const finalCategory = categoryMap[normalizedCategory] || "OTHER";
+
+    let submitterId = req.userId || req.body.submitterId;
+
+    if (!submitterId) {
+      const fallbackUser = await prisma.user.findFirst();
+      if (!fallbackUser) {
+        return res
+          .status(404)
+          .json({ message: "No user found to assign the ticket" });
+      }
+      submitterId = fallbackUser.id;
+    }
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: submitterId,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const ticket = await prisma.ticket.create({
+      data: {
+        title,
+        description,
+        priority: finalPriority,
+        category: finalCategory,
+        status: "OPEN",
+        submitterId,
+        attachments: {
+          create: (Array.isArray(images) ? images : []).map((image) => ({
+            fileUrl:
+              typeof image === "string" ? image : image.name || "attachment",
+          })),
+        },
+      },
+    });
+
+    res.status(201).json({
+      message: "Ticket created successfully",
+      ticket: {
+        id: ticket.id,
+        title: ticket.title,
+        description: ticket.description,
+        priority: ticket.priority,
+        category: ticket.category,
+        status: ticket.status,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating ticket:", error);
+    res.status(500).json({ message: "Failed to create ticket" });
+  }
+};
+
+export const getTickets = async (req, res) => {
+  try {
+    const tickets = await prisma.ticket.findMany();
+    res.status(200).json(tickets);
+  } catch (error) {
+    console.error("Error fetching tickets:", error);
+    res.status(500).json({ message: "Failed to fetch tickets" });
+  }
+};
+
+export const updateTicket = async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { title, description, priority, category, images } = req.body;
+
+    if (!title || !description || !priority || !category) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const ticket = await prisma.ticket.findUnique({
+      where: {
+        id: ticketId,
+      },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    const normalizedPriority = priority?.toLowerCase();
+
+    const priorityMap = {
+      low: "LOW",
+      medium: "MEDIUM",
+      high: "HIGH",
+      critical: "CRITICAL",
+    };
+
+    const finalPriority = priorityMap[normalizedPriority] || "MEDIUM";
+
+    const normalizedCategory = category?.toLowerCase();
+
+    const categoryMap = {
+      software: "SOFTWARE",
+      hardware: "HARDWARE",
+      network: "NETWORK",
+      printer: "PRINTER",
+      email: "EMAIL",
+      other: "OTHER",
+      access: "OTHER",
+    };
+
+    const finalCategory = categoryMap[normalizedCategory] || "OTHER";
+
+    const updatedTicket = await prisma.ticket.update({
+      where: {
+        id: ticketId,
+      },
+      data: {
+        title,
+        description,
+        priority: finalPriority,
+        category: finalCategory,
+        attachments: {
+          create: (Array.isArray(images) ? images : []).map((image) => ({
+            fileUrl:
+              typeof image === "string" ? image : image.name || "attachment",
+          })),
+        },
+      },
+    });
+
+    res.status(200).json({
+      message: "Ticket updated successfully",
+      updatedTicket: {
+        id: updatedTicket.id,
+        title: updatedTicket.title,
+        description: updatedTicket.description,
+        priority: updatedTicket.priority,
+        category: updatedTicket.category,
+        status: updatedTicket.status,
+      },
+    });
+  } catch (error) {
+    console.error("Error updating ticket:", error);
+    res.status(500).json({ message: "Failed to update ticket" });
+  }
+};
+export const deleteTicket = async (req, res) => {
+  try {
+    const ticketId = req.params.id;
+
+    const ticket = await prisma.ticket.findUnique({
+      where: {
+        id: ticketId,
+      },
+    });
+
+    if (!ticket) {
+      return res.status(404).json({ message: "Ticket not found" });
+    }
+
+    await prisma.ticket.delete({
+      where: {
+        id: ticketId,
+      },
+    });
+
+    res.status(200).json({
+      message: "Ticket deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting ticket:", error);
+    res.status(500).json({ message: "Failed to delete ticket" });
+  }
+};

@@ -101,7 +101,9 @@ const RaiseTicket = () => {
                   ["software", "Software"],
                   ["hardware", "Hardware"],
                   ["network", "Network"],
-                  ["access", "Access"],
+                  ["printer", "Printer"],
+                  ["email", "Email"],
+                  ["other", "Other"],
                 ]}
                 formik={formik}
                 placeholder="Select category"

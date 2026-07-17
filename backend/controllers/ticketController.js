@@ -1,7 +1,6 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import prismaPkg from "../generated/prisma/client.js";
 
-
 const { PrismaClient } = prismaPkg;
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
@@ -10,7 +9,8 @@ const prisma = new PrismaClient({ adapter });
 export const createTicket = async (req, res) => {
   try {
     const userId = req.userId;
-    const { title, description, priority, category, images } = req.body;
+    const { title, description, priority, category } = req.body;
+    const uploadedFiles = req.files || [];
 
     if (!title || !description || !priority || !category) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -72,9 +72,8 @@ export const createTicket = async (req, res) => {
         status: "OPEN",
         submitterId,
         attachments: {
-          create: (Array.isArray(images) ? images : []).map((image) => ({
-            fileUrl:
-              typeof image === "string" ? image : image.name || "attachment",
+          create: uploadedFiles.map((file) => ({
+            fileUrl: file.path,
           })),
         },
       },
@@ -97,6 +96,8 @@ export const createTicket = async (req, res) => {
   }
 };
 
+
+
 export const getTickets = async (req, res) => {
   try {
     const tickets = await prisma.ticket.findMany();
@@ -107,10 +108,13 @@ export const getTickets = async (req, res) => {
   }
 };
 
+
+
 export const updateTicket = async (req, res) => {
   try {
     const ticketId = req.params.id;
-    const { title, description, priority, category, images } = req.body;
+    const { title, description, priority, category } = req.body;
+    const uploadedFiles = req.files || [];
 
     if (!title || !description || !priority || !category) {
       return res.status(400).json({ message: "Missing required fields" });
@@ -161,9 +165,8 @@ export const updateTicket = async (req, res) => {
         priority: finalPriority,
         category: finalCategory,
         attachments: {
-          create: (Array.isArray(images) ? images : []).map((image) => ({
-            fileUrl:
-              typeof image === "string" ? image : image.name || "attachment",
+          create: uploadedFiles.map((file) => ({
+            fileUrl: file.path,
           })),
         },
       },
@@ -185,6 +188,9 @@ export const updateTicket = async (req, res) => {
     res.status(500).json({ message: "Failed to update ticket" });
   }
 };
+
+
+
 export const deleteTicket = async (req, res) => {
   try {
     const ticketId = req.params.id;

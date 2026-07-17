@@ -5,12 +5,13 @@ import {
   updateTicket,
   deleteTicket,
 } from "../controllers/ticketController.js";
+import { uploadImages } from "../middleware/multerMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getTickets);
-router.post("/", createTicket);
-router.put("/:id", updateTicket);
+router.post("/", uploadImages, createTicket);
+router.put("/:id", uploadImages, updateTicket);
 router.delete("/:id", deleteTicket);
 
 export default router;

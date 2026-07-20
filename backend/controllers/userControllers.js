@@ -2,14 +2,47 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import prismaPkg from "../generated/prisma/client.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import Joi from "joi";
 
 const { PrismaClient } = prismaPkg;
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+const userSchema = Joi.object({
+  fullName: Joi.string().trim().required(),
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().trim().min(6).required(),
+  role: Joi.string().trim().valid("STAFF", "IT_ADMIN").required(),
+  departmentId: Joi.string().trim(),
+  mustChangePass: Joi.boolean(),
+  isActive: Joi.boolean(),
+});
+
+const passwordChangeSchema = Joi.object({
+  currentPassword: Joi.string().trim().required(),
+  newPassword: Joi.string().trim().min(6).required(),
+  confirmPassword: Joi.string().trim().min(6).required(),
+}).custom((value, helpers) => {
+  if (value.newPassword !== value.confirmPassword) {
+    return helpers.message("New passwords do not match");
+  }
+  return value;
+});
+
 export const createUser = async (req, res) => {
   try {
+    const { error, value } = userSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        details: error.details.map((detail) => detail.message),
+      });
+    }
+
     const {
       fullName,
       email,
@@ -18,11 +51,7 @@ export const createUser = async (req, res) => {
       departmentId,
       mustChangePass,
       isActive,
-    } = req.body;
-
-    if (!fullName || !email || !password || !role) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
+    } = value;
 
     const existingUser = await prisma.user.findUnique({
       where: {
@@ -92,12 +121,19 @@ export const createUser = async (req, res) => {
 
 export const changePassword = async (req, res) => {
   try {
-    const UserId = req.user.id;
-    const { currentPassword, newPassword, confirmPassword } = req.body;
+    const { error, value } = passwordChangeSchema.validate(req.body, {
+      abortEarly: false,
+    });
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        details: error.details.map((detail) => detail.message),
+      });
     }
+
+    const UserId = req.user.id;
+    const { currentPassword, newPassword, confirmPassword } = value;
 
     if (newPassword !== confirmPassword) {
       return res.status(400).json({ message: "New passwords do not match" });

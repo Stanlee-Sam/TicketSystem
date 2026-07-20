@@ -2,6 +2,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import prismaPkg from "../generated/prisma/client.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import Joi from "joi";
 
 const { PrismaClient } = prismaPkg;
 
@@ -17,9 +18,24 @@ const generateAccessToken = (user) => {
   );
 };
 
+const loginSchema = Joi.object({
+  email: Joi.string().trim().email().required(),
+  password: Joi.string().trim().min(6).required(),
+});
+
 export const loginUser = async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { error, value } = loginSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        details: error.details.map((detail) => detail.message),
+      });
+    }
+    const { email, password } = value;
 
     const user = await prisma.user.findUnique({
       where: {

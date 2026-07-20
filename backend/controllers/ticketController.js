@@ -1,15 +1,52 @@
 import { PrismaPg } from "@prisma/adapter-pg";
 import prismaPkg from "../generated/prisma/client.js";
+import Joi from "joi";
 
 const { PrismaClient } = prismaPkg;
 
 const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
 const prisma = new PrismaClient({ adapter });
 
+const ticketSchema = Joi.object({
+  title: Joi.string().trim().required(),
+  description: Joi.string().trim().required(),
+  priority: Joi.string()
+    .trim()
+    .valid("low", "medium", "high", "critical")
+    .required(),
+  category: Joi.string()
+    .trim()
+    .valid(
+      "hardware",
+      "software",
+      "network",
+      "printer",
+      "email",
+      "other",
+      "access",
+    )
+    .required(),
+});
+
+const paramsSchema = Joi.object({
+  id: Joi.string().required(),
+});
+
 export const createTicket = async (req, res) => {
   try {
+    const { error, value } = ticketSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        details: error.details.map((detail) => detail.message),
+      });
+    }
+
     const userId = req.userId;
-    const { title, description, priority, category } = req.body;
+    const { title, description, priority, category } = value;
     const uploadedFiles = req.files || [];
 
     if (!title || !description || !priority || !category) {
@@ -96,8 +133,6 @@ export const createTicket = async (req, res) => {
   }
 };
 
-
-
 export const getTickets = async (req, res) => {
   try {
     const tickets = await prisma.ticket.findMany();
@@ -108,12 +143,27 @@ export const getTickets = async (req, res) => {
   }
 };
 
-
-
 export const updateTicket = async (req, res) => {
   try {
+    const { error, value } = ticketSchema.validate(req.body, {
+      abortEarly: false,
+    });
+    const { error: paramsError } = paramsSchema.validate(req.params);
+
+    if (error) {
+      return res.status(400).json({
+        message: "Validation error",
+        details: error.details.map((detail) => detail.message),
+      });
+    }
+
+    if (paramsError) {
+      return res.status(400).json({
+        message: "Invalid ticket ID",
+      });
+    }
     const ticketId = req.params.id;
-    const { title, description, priority, category } = req.body;
+    const { title, description, priority, category } = value;
     const uploadedFiles = req.files || [];
 
     if (!title || !description || !priority || !category) {
@@ -189,10 +239,16 @@ export const updateTicket = async (req, res) => {
   }
 };
 
-
-
 export const deleteTicket = async (req, res) => {
   try {
+    const { error: paramsError } = paramsSchema.validate(req.params);
+
+    if (paramsError) {
+      return res.status(400).json({
+        message: "Invalid ticket ID",
+      });
+    }
+
     const ticketId = req.params.id;
 
     const ticket = await prisma.ticket.findUnique({

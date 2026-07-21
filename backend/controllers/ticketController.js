@@ -1,11 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import prismaPkg from "../generated/prisma/client.js";
+import prisma from "../lib/prisma.js";
+import { nextTicketNumber } from "../lib/ticketNumber.js";
 import Joi from "joi";
-
-const { PrismaClient } = prismaPkg;
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
 
 const ticketSchema = Joi.object({
   title: Joi.string().trim().required(),
@@ -45,7 +40,6 @@ export const createTicket = async (req, res) => {
       });
     }
 
-    const userId = req.userId;
     const { title, description, priority, category } = value;
     const uploadedFiles = req.files || [];
 
@@ -100,26 +94,32 @@ export const createTicket = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    const ticket = await prisma.ticket.create({
-      data: {
-        title,
-        description,
-        priority: finalPriority,
-        category: finalCategory,
-        status: "OPEN",
-        submitterId,
-        attachments: {
-          create: uploadedFiles.map((file) => ({
-            fileUrl: file.path,
-          })),
+    const ticket = await prisma.$transaction(async (tx) => {
+      const ticketNumber = await nextTicketNumber(tx);
+
+      return tx.ticket.create({
+        data: {
+          ticketNumber,
+          title,
+          description,
+          priority: finalPriority,
+          category: finalCategory,
+          status: "OPEN",
+          submitterId,
+          attachments: {
+            create: uploadedFiles.map((file) => ({
+              fileUrl: file.path,
+            })),
+          },
         },
-      },
+      });
     });
 
     res.status(201).json({
       message: "Ticket created successfully",
       ticket: {
         id: ticket.id,
+        ticketNumber: ticket.ticketNumber,
         title: ticket.title,
         description: ticket.description,
         priority: ticket.priority,
@@ -135,7 +135,9 @@ export const createTicket = async (req, res) => {
 
 export const getTickets = async (req, res) => {
   try {
-    const tickets = await prisma.ticket.findMany();
+    const tickets = await prisma.ticket.findMany({
+      orderBy: { createdAt: "desc" },
+    });
     res.status(200).json(tickets);
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -226,6 +228,7 @@ export const updateTicket = async (req, res) => {
       message: "Ticket updated successfully",
       updatedTicket: {
         id: updatedTicket.id,
+        ticketNumber: updatedTicket.ticketNumber,
         title: updatedTicket.title,
         description: updatedTicket.description,
         priority: updatedTicket.priority,

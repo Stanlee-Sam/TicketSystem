@@ -6,12 +6,13 @@ import {
   deleteTicket,
 } from "../controllers/ticketController.js";
 import { uploadImages } from "../middleware/multerMiddleware.js";
+import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
 router.get("/", getTickets);
-router.post("/", uploadImages, createTicket);
-router.put("/:id", uploadImages, updateTicket);
-router.delete("/:id", deleteTicket);
+router.post("/",  uploadImages, createTicket);
+router.put("/:id",  uploadImages, updateTicket);
+router.delete("/:id",  deleteTicket);
 
 export default router;

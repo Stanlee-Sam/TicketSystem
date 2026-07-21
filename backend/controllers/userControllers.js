@@ -1,13 +1,6 @@
-import { PrismaPg } from "@prisma/adapter-pg";
-import prismaPkg from "../generated/prisma/client.js";
-import jwt from "jsonwebtoken";
+import prisma from "../lib/prisma.js";
 import bcrypt from "bcrypt";
 import Joi from "joi";
-
-const { PrismaClient } = prismaPkg;
-
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
 
 const userSchema = Joi.object({
   fullName: Joi.string().trim().required(),
@@ -78,6 +71,18 @@ export const createUser = async (req, res) => {
 
     if (!["STAFF", "IT_ADMIN"].includes(finalRole)) {
       return res.status(400).json({ message: "Invalid role" });
+    }
+
+    if (departmentId) {
+      const department = await prisma.department.findUnique({
+        where: { id: departmentId },
+      });
+
+      if (!department) {
+        return res.status(400).json({
+          message: "Invalid departmentId. Omit it or use a valid department id.",
+        });
+      }
     }
 
     const user = await prisma.user.create({

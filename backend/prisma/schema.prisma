@@ -6,7 +6,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  // output   = "../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -68,9 +68,10 @@ model Department {
 }
 
 model Ticket {
-  id          String @id @default(uuid())
-  title       String
-  description String
+  id           String @id @default(uuid())
+  ticketNumber String @unique
+  title        String
+  description  String
 
   priority TicketPriority @default(MEDIUM)
   category TicketCategory @default(OTHER)

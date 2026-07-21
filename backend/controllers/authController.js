@@ -1,13 +1,13 @@
-import { getPrisma } from '../services/db.js';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
-import Joi from 'joi';
+import { getPrisma } from "../services/db.js";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
+import Joi from "joi";
 
 const generateAccessToken = (user) => {
   return jwt.sign(
-    { userId: user.id, role: user.role || 'STAFF' },
+    { userId: user.id, role: user.role || "STAFF" },
     process.env.JWT_SECRET,
-    { expiresIn: '7d' },
+    { expiresIn: "7d" },
   );
 };
 
@@ -25,7 +25,7 @@ export const loginUser = async (req, res) => {
 
     if (error) {
       return res.status(400).json({
-        message: 'Validation error',
+        message: "Validation error",
         details: error.details.map((detail) => detail.message),
       });
     }
@@ -38,17 +38,17 @@ export const loginUser = async (req, res) => {
     });
 
     if (!user) {
-      return res.status(400).json({ message: 'User not found' });
+      return res.status(400).json({ message: "User not found" });
     }
 
     const validPassword = await bcrypt.compare(password, user.passwordHash);
     if (!validPassword) {
-      return res.status(400).json({ message: 'Invalid password' });
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     const accessToken = generateAccessToken(user);
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       accessToken,
       user: {
         id: user.id,
@@ -58,7 +58,7 @@ export const loginUser = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error logging in user:', error);
-    res.status(500).json({ message: 'Failed to login user' });
+    console.error("Error logging in user:", error);
+    res.status(500).json({ message: "Failed to login user" });
   }
 };

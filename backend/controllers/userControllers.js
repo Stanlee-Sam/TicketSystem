@@ -6,8 +6,9 @@ const userSchema = Joi.object({
   fullName: Joi.string().trim().required(),
   email: Joi.string().trim().email().required(),
   password: Joi.string().trim().min(6).required(),
-  role: Joi.string().trim().valid("STAFF", "IT_ADMIN").required(),
+  role: Joi.string().trim().required(),
   departmentId: Joi.string().trim(),
+  department: Joi.string().trim(),
   mustChangePass: Joi.boolean(),
   isActive: Joi.boolean(),
 });
@@ -42,6 +43,7 @@ export const createUser = async (req, res) => {
       password,
       role,
       departmentId,
+      department: departmentName,
       mustChangePass,
       isActive,
     } = value;
@@ -73,14 +75,26 @@ export const createUser = async (req, res) => {
       return res.status(400).json({ message: "Invalid role" });
     }
 
-    if (departmentId) {
-      const department = await prisma.department.findUnique({
+    let finalDepartmentId = departmentId;
+    if (departmentName) {
+      const dept = await prisma.department.findUnique({
+        where: { name: departmentName },
+      });
+      if (!dept) {
+        return res.status(400).json({
+          message:
+            "Invalid department name. Omit it or use a valid department name.",
+        });
+      }
+      finalDepartmentId = dept.id;
+    } else if (departmentId) {
+      const dept = await prisma.department.findUnique({
         where: { id: departmentId },
       });
-
-      if (!department) {
+      if (!dept) {
         return res.status(400).json({
-          message: "Invalid departmentId. Omit it or use a valid department id.",
+          message:
+            "Invalid departmentId. Omit it or use a valid department id.",
         });
       }
     }
@@ -91,7 +105,7 @@ export const createUser = async (req, res) => {
         email,
         passwordHash,
         role: finalRole,
-        departmentId: departmentId || null,
+        departmentId: finalDepartmentId || null,
         mustChangePass: mustChangePass ?? true,
         isActive: isActive ?? true,
       },

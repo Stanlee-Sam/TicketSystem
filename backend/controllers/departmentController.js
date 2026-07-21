@@ -1,4 +1,9 @@
 import prisma from "../lib/prisma.js";
+import Joi from "joi";
+
+const departmentSchema = Joi.object({
+  name: Joi.string().trim().required(),
+});
 
 export const getDepartments = async (_req, res) => {
   try {

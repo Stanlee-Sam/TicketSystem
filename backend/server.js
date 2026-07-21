@@ -1,4 +1,4 @@
-import "./lib/prisma.js";
+import "./services/cloudinary.js";
 import express from "express";
 import cors from "cors";
 import loginRoute from "./routes/authRoute.js";
@@ -16,6 +16,10 @@ app.use(
     credentials: true,
   }),
 );
+
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
 
 //routes
 app.use("/auth", loginRoute);

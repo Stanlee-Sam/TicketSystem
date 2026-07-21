@@ -1,4 +1,4 @@
-import { getPrisma } from "../services/db.js";
+import prisma from "../lib/prisma.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import Joi from "joi";
@@ -18,7 +18,6 @@ const loginSchema = Joi.object({
 
 export const loginUser = async (req, res) => {
   try {
-    const prisma = await getPrisma();
     const { error, value } = loginSchema.validate(req.body, {
       abortEarly: false,
     });

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 // import { Eye, Edit, Filter, AlertCircle, CheckCircle, Inbox, AlertTriangle, Clock, Check, Plus } from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
@@ -27,79 +27,83 @@ import {
   Save,
   UserCheck,
 } from "lucide-react";
+import { toast } from "sonner";
+import axios from "axios";
 
-const tickets = [
-  {
-    id: "#TK-88421",
-    title: "Epic Login Failure - Ward 4B",
-    category: "Auth Module",
-    priority: "CRITICAL",
-    priorityClass: "text-danger",
-    status: "OPEN",
-    statusClass: "bg-primary text-on-primary",
-    createdAt: "Oct 24, 2024",
-    createdTime: "08:14 AM",
-    pulse: true,
-    description:
-      "User authentication system in Ward 4B is experiencing intermittent failures, preventing staff from logging into the patient management system. This is affecting patient care operations.",
-  },
-  {
-    id: "#TK-88415",
-    title: "Printer Jam - Floor 3 Nurse Station",
-    category: "Hardware",
-    priority: "MEDIUM",
-    priorityClass: "text-warning",
-    status: "IN PROGRESS",
-    statusClass: "bg-warning-soft text-tertiary",
-    createdAt: "Oct 23, 2024",
-    createdTime: "11:45 PM",
-    description:
-      "Printer at Floor 3 Nurse Station is jammed and requires immediate attention. Replacement toner cartridge is ready.",
-  },
-  {
-    id: "#TK-88409",
-    title: "VPN Connection Issues - Remote Staff",
-    category: "Networking",
-    priority: "HIGH",
-    priorityClass: "text-danger-dark",
-    status: "RESOLVED",
-    statusClass: "bg-success text-on-primary",
-    createdAt: "Oct 23, 2024",
-    createdTime: "04:30 PM",
-    description:
-      "Remote staff members are experiencing unstable VPN connections affecting their ability to access patient records from home.",
-  },
-  {
-    id: "#TK-88390",
-    title: "Software Update - Lab Terminals",
-    category: "Maintenance",
-    priority: "LOW",
-    priorityClass: "text-primary",
-    status: "CLOSED",
-    statusClass: "bg-inverse text-on-inverse",
-    createdAt: "Oct 22, 2024",
-    createdTime: "09:12 AM",
-    description:
-      "Scheduled software update for lab terminals completed successfully.",
-  },
-  {
-    id: "#TK-88432",
-    title: "New Keyboard Request - Oncology",
-    category: "Procurement",
-    priority: "LOW",
-    priorityClass: "text-primary",
-    status: "OPEN",
-    statusClass: "bg-primary text-on-primary",
-    createdAt: "Oct 24, 2024",
-    createdTime: "10:05 AM",
-    description:
-      "Ergonomic keyboard requested for Oncology department workstation.",
-  },
-];
+// const tickets = [
+//   {
+//     id: "#TK-88421",
+//     title: "Epic Login Failure - Ward 4B",
+//     category: "Auth Module",
+//     priority: "CRITICAL",
+//     priorityClass: "text-danger",
+//     status: "OPEN",
+//     statusClass: "bg-primary text-on-primary",
+//     createdAt: "Oct 24, 2024",
+//     createdTime: "08:14 AM",
+//     pulse: true,
+//     description:
+//       "User authentication system in Ward 4B is experiencing intermittent failures, preventing staff from logging into the patient management system. This is affecting patient care operations.",
+//   },
+//   {
+//     id: "#TK-88415",
+//     title: "Printer Jam - Floor 3 Nurse Station",
+//     category: "Hardware",
+//     priority: "MEDIUM",
+//     priorityClass: "text-warning",
+//     status: "IN PROGRESS",
+//     statusClass: "bg-warning-soft text-tertiary",
+//     createdAt: "Oct 23, 2024",
+//     createdTime: "11:45 PM",
+//     description:
+//       "Printer at Floor 3 Nurse Station is jammed and requires immediate attention. Replacement toner cartridge is ready.",
+//   },
+//   {
+//     id: "#TK-88409",
+//     title: "VPN Connection Issues - Remote Staff",
+//     category: "Networking",
+//     priority: "HIGH",
+//     priorityClass: "text-danger-dark",
+//     status: "RESOLVED",
+//     statusClass: "bg-success text-on-primary",
+//     createdAt: "Oct 23, 2024",
+//     createdTime: "04:30 PM",
+//     description:
+//       "Remote staff members are experiencing unstable VPN connections affecting their ability to access patient records from home.",
+//   },
+//   {
+//     id: "#TK-88390",
+//     title: "Software Update - Lab Terminals",
+//     category: "Maintenance",
+//     priority: "LOW",
+//     priorityClass: "text-primary",
+//     status: "CLOSED",
+//     statusClass: "bg-inverse text-on-inverse",
+//     createdAt: "Oct 22, 2024",
+//     createdTime: "09:12 AM",
+//     description:
+//       "Scheduled software update for lab terminals completed successfully.",
+//   },
+//   {
+//     id: "#TK-88432",
+//     title: "New Keyboard Request - Oncology",
+//     category: "Procurement",
+//     priority: "LOW",
+//     priorityClass: "text-primary",
+//     status: "OPEN",
+//     statusClass: "bg-primary text-on-primary",
+//     createdAt: "Oct 24, 2024",
+//     createdTime: "10:05 AM",
+//     description:
+//       "Ergonomic keyboard requested for Oncology department workstation.",
+//   },
+// ];
 
 const Dashboard = () => {
+  const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editingTicket, setEditingTicket] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
@@ -107,15 +111,30 @@ const Dashboard = () => {
 
   const editTicket = (ticket) => {
     setEditingTicket(ticket);
-  }
+  };
 
   const closeEditing = () => {
     setEditingTicket(null);
-  }
+  };
 
   const closeModal = () => {
     setSelectedTicket(null);
   };
+
+  useEffect(() => {
+    const fetchTickets = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/ticket`);
+        setTickets(response.data);
+      } catch (error) {
+        toast.error("Failed to fetch tickets:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTickets();
+  }, []);
 
   return (
     <div className="min-h-screen">
@@ -192,9 +211,7 @@ const Dashboard = () => {
             <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full">
               <div className="flex flex-row items-center gap-2">
                 <Filter className="text-muted h-4 w-4" />
-                <span className="text-sm font-bold text-muted">
-                  Filter by:
-                </span>
+                <span className="text-sm font-bold text-muted">Filter by:</span>
               </div>
               <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
                 <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
@@ -276,7 +293,7 @@ const Dashboard = () => {
                             {ticket.title}
                           </span>
                           <span className="text-xs text-subtle">
-                            ID: {ticket.id} &bull; {ticket.category}
+                            ID: {ticket.ticketNumber} &bull; {ticket.category}
                           </span>
                         </div>
                       </td>
@@ -284,9 +301,9 @@ const Dashboard = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
                         >
-                          {ticket.pulse && (
+                          {/* {ticket.pulse && (
                             <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-                          )}
+                          )} */}
                           {ticket.priority}
                         </span>
                       </td>
@@ -377,7 +394,9 @@ const Dashboard = () => {
                     <span className="text-xs font-bold uppercase tracking-wider text-muted">
                       PRIORITY:
                     </span>
-                    <span className={`rounded-full border border-current/20 px-2.5 py-1 text-xs font-bold ${selectedTicket.priorityClass}`}>
+                    <span
+                      className={`rounded-full border border-current/20 px-2.5 py-1 text-xs font-bold ${selectedTicket.priorityClass}`}
+                    >
                       {selectedTicket.priority}
                     </span>
                   </div>
@@ -481,15 +500,11 @@ const Dashboard = () => {
                         <div className="space-y-2 pt-1">
                           <div className="flex items-center gap-2 text-muted">
                             <Mail className="h-5 w-5" />
-                            <span className="text-sm">
-                              s.chen@medtech.org
-                            </span>
+                            <span className="text-sm">s.chen@medtech.org</span>
                           </div>
                           <div className="flex items-center gap-2 text-muted">
                             <Phone className="h-5 w-5" />
-                            <span className="text-sm">
-                              Ext. 4492 (ER Hub)
-                            </span>
+                            <span className="text-sm">Ext. 4492 (ER Hub)</span>
                           </div>
                           <div className="flex items-center gap-2 text-muted">
                             <MapPin className="h-5 w-5" />
@@ -591,7 +606,8 @@ const Dashboard = () => {
                       {editingTicket.title}
                     </p>
                     <p className="mt-1 text-xs text-subtle">
-                      {editingTicket.category} &bull; Created {editingTicket.createdAt}
+                      {editingTicket.category} &bull; Created{" "}
+                      {editingTicket.createdAt}
                     </p>
                   </div>
 
@@ -652,7 +668,7 @@ const TicketCard = ({ ticket, onOpenModal, onUpdateTicket }) => (
     <div className="flex  items-start gap-3">
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
-          {ticket.id}
+          {ticket.ticketNumber}
         </p>
         <h2 className="mt-1 text-[15px] font-semibold leading-5 text-text">
           {ticket.title}
@@ -674,9 +690,9 @@ const TicketCard = ({ ticket, onOpenModal, onUpdateTicket }) => (
         <span
           className={`mt-1 items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
         >
-          {ticket.pulse && (
+          {/* {ticket.pulse && (
             <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-          )}
+          )} */}
           {ticket.priority}
         </span>
       </div>

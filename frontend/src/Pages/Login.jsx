@@ -5,6 +5,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
+import axios from 'axios'
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -18,6 +19,7 @@ const validationSchema = Yup.object({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -27,14 +29,22 @@ const Login = () => {
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        console.log(values);
+        setIsLoading(true);
+        const response = await axios.post(`http://localhost:5000/auth/login`, {
+          email: values.email,
+          password: values.password,
+        });
+
         toast.success("Login successful!");
         await new Promise((resolve) => setTimeout(resolve, 1500));
         resetForm();
       } catch (error) {
-        toast.error(error);
+        toast.error(
+          error.response?.data?.message || error.message || "Login failed",
+        );
       } finally {
         setSubmitting(false);
+        setIsLoading(false);
       }
     },
   });
@@ -81,7 +91,11 @@ const Login = () => {
               </p>
             </div>
 
-            <form className="space-y-5" onSubmit={formik.handleSubmit} noValidate>
+            <form
+              className="space-y-5"
+              onSubmit={formik.handleSubmit}
+              noValidate
+            >
               <div className="space-y-1.5">
                 <label
                   className="text-xs font-semibold uppercase tracking-wider text-muted"
@@ -104,7 +118,6 @@ const Login = () => {
                     value={formik.values.email}
                     onChange={formik.handleChange}
                     onBlur={formik.handleBlur}
-                    
                   />
                   <FieldError formik={formik} name="email" />
                 </div>
@@ -172,11 +185,14 @@ const Login = () => {
                 type="submit"
                 disabled={formik.isSubmitting}
               >
-                {formik.isSubmitting ? <ClipLoader size={20} /> : <>
-                <span>Sign In</span>
-                <LogIn className="h-4 w-4" aria-hidden="true" />
-                </>}
-                
+                {formik.isSubmitting ? (
+                  <ClipLoader size={20} />
+                ) : (
+                  <>
+                    <span>Sign In</span>
+                    <LogIn className="h-4 w-4" aria-hidden="true" />
+                  </>
+                )}
               </button>
             </form>
           </div>
@@ -226,8 +242,9 @@ const FieldError = ({ formik, name }) => {
     return null;
   }
 
-  return <p className="text-xs font-medium text-danger">{formik.errors[name]}</p>;
+  return (
+    <p className="text-xs font-medium text-danger">{formik.errors[name]}</p>
+  );
 };
-
 
 export default Login;

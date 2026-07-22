@@ -11,7 +11,7 @@ import {
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { toast } from "sonner";
-import { ClipLoader } from "react-spinners";
+import { ClipLoader, HashLoader } from "react-spinners";
 import Sidebar from "../../Components/Sidebar";
 
 // Validation schema
@@ -36,15 +36,19 @@ const CreateUser = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [departments, setDepartments] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [loadingDepartments, setLoadingDepartments] = useState(true);
 
   // Fetch departments on mount
   useEffect(() => {
     const fetchDepartments = async () => {
       try {
+        setLoadingDepartments(true);
         const response = await axios.get("http://localhost:5000/department");
         setDepartments(response.data);
       } catch (error) {
         console.error("Failed to fetch departments:", error);
+      } finally {
+        setLoadingDepartments(false);
       }
     };
     fetchDepartments();
@@ -102,12 +106,17 @@ const CreateUser = () => {
             </p>
           </div>
 
-          <div className="overflow-hidden rounded-xl border border-line bg-card shadow-sm">
-            <form
-              className="space-y-5 p-6"
-              onSubmit={formik.handleSubmit}
-              noValidate
-            >
+          {loadingDepartments ? (
+            <div className="flex items-center justify-center h-[50dvh]">
+              <HashLoader color="#003c90" />
+            </div>
+          ) : (
+            <div className="overflow-hidden rounded-xl border border-line bg-card shadow-sm">
+              <form
+                className="space-y-5 p-6"
+                onSubmit={formik.handleSubmit}
+                noValidate
+              >
               <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <div className="space-y-2">
                   <label
@@ -312,6 +321,7 @@ const CreateUser = () => {
               </div>
             </form>
           </div>
+          )}
         </div>
       </main>
     </div>

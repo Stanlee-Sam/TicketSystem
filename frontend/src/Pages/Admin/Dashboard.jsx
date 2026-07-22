@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useState } from "react";
 // import { Eye, Edit, Filter, AlertCircle, CheckCircle, Inbox, AlertTriangle, Clock, Check, Plus } from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
+import EmptyState from "../../Components/EmptyState";
 import {
   Inbox,
   AlertTriangle,
@@ -28,6 +29,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { HashLoader } from "react-spinners";
 
 // const tickets = [
 //   {
@@ -128,6 +130,7 @@ const Dashboard = () => {
   };
 
   const fetchTickets = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(`http://localhost:5000/ticket`);
       const processedTickets = response.data.map((ticket) => {
@@ -344,130 +347,143 @@ const Dashboard = () => {
             </div>
           </div>
           <div className="overflow-hidden rounded-lg border border-line bg-card shadow-sm">
-            <div className="divide-y divide-line md:hidden">
-              {tickets.map((ticket) => (
-                <TicketCard
-                  onOpenModal={() => openModal(ticket)}
-                  onUpdateTicket={() => editTicket(ticket)}
-                  key={ticket.id}
-                  ticket={ticket}
-                />
-              ))}
-            </div>
-
-            <div className="hidden overflow-x-auto md:block">
-              <table className="w-full border-collapse text-left">
-                <thead className="border-b border-line bg-card-soft">
-                  <tr>
-                    {[
-                      "Ticket Title",
-                      "Priority",
-                      "Status",
-                      "Date Created",
-                      "Actions",
-                    ].map((heading) => (
-                      <th
-                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted ${
-                          ["Priority", "Status"].includes(heading)
-                            ? "text-center"
-                            : heading === "Actions"
-                              ? "text-right"
-                              : ""
-                        }`}
-                        key={heading}
-                      >
-                        {heading}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-line">
-                  {tickets.map((ticket) => (
-                    <tr
-                      className="transition-colors hover:bg-bg-soft cursor-pointer"
-                      key={ticket.id}
-                      onClick={() => openModal(ticket)}
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex flex-col">
-                          <span className="text-sm font-semibold text-text">
-                            {ticket.title}
-                          </span>
-                          <span className="text-xs text-subtle">
-                            ID: {ticket.ticketNumber} &bull; {ticket.category}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
-                        >
-                          {ticket.priority === "CRITICAL" && (
-                            <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-                          )}
-                          {ticket.priority}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-center">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${ticket.statusClass}`}
-                        >
-                          {ticket.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-muted">
-                        {ticket.createdAt} &bull; {ticket.createdTime}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <IconButton
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openModal(ticket);
-                            }}
-                            label="View Details"
-                            icon={Eye}
-                          />
-                          <IconButton
-                            label="Update Ticket"
-                            icon={Pencil}
-                            muted
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              editTicket(ticket);
-                            }}
-                          />
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="flex flex-col items-center justify-between gap-4 border-t border-line bg-bg-soft px-6 py-4 sm:flex-row">
-              <span className="text-sm text-muted">
-                Showing <span className="font-bold text-text">1 - 5</span> of{" "}
-                <span className="font-bold text-text">24</span> tickets
-              </span>
-              <div className="flex items-center gap-2">
-                <PageButton disabled icon={ChevronLeft} label="Previous page" />
-                {[1, 2, 3].map((page) => (
-                  <button
-                    className={`h-8 w-8 rounded text-xs font-semibold transition-colors ${
-                      page === 1
-                        ? "bg-primary text-on-primary"
-                        : "text-muted hover:bg-card-muted"
-                    }`}
-                    key={page}
-                    type="button"
-                  >
-                    {page}
-                  </button>
-                ))}
-                <PageButton icon={ChevronRight} label="Next page" />
+            {loading ? (
+              <div className="flex items-center justify-center h-[50dvh]">
+                <HashLoader color="#003c90" />
               </div>
-            </div>
+            ) : tickets.length === 0 ? (
+              <EmptyState
+                title="No tickets found"
+                description="There are no support tickets in the system at the moment."
+              />
+            ) : (
+              <>
+                <div className="divide-y divide-line md:hidden">
+                  {tickets.map((ticket) => (
+                    <TicketCard
+                      onOpenModal={() => openModal(ticket)}
+                      onUpdateTicket={() => editTicket(ticket)}
+                      key={ticket.id}
+                      ticket={ticket}
+                    />
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto md:block">
+                  <table className="w-full border-collapse text-left">
+                    <thead className="border-b border-line bg-card-soft">
+                      <tr>
+                        {[
+                          "Ticket Title",
+                          "Priority",
+                          "Status",
+                          "Date Created",
+                          "Actions",
+                        ].map((heading) => (
+                          <th
+                            className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted ${
+                              ["Priority", "Status"].includes(heading)
+                                ? "text-center"
+                                : heading === "Actions"
+                                  ? "text-right"
+                                  : ""
+                            }`}
+                            key={heading}
+                          >
+                            {heading}
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-line">
+                      {tickets.map((ticket) => (
+                        <tr
+                          className="transition-colors hover:bg-bg-soft cursor-pointer"
+                          key={ticket.id}
+                          onClick={() => openModal(ticket)}
+                        >
+                          <td className="px-6 py-4">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-semibold text-text">
+                                {ticket.title}
+                              </span>
+                              <span className="text-xs text-subtle">
+                                ID: {ticket.ticketNumber} &bull; {ticket.category}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
+                            >
+                              {ticket.priority === "CRITICAL" && (
+                                <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
+                              )}
+                              {ticket.priority}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-center">
+                            <span
+                              className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider ${ticket.statusClass}`}
+                            >
+                              {ticket.status}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-muted">
+                            {ticket.createdAt} &bull; {ticket.createdTime}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <IconButton
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  openModal(ticket);
+                                }}
+                                label="View Details"
+                                icon={Eye}
+                              />
+                              <IconButton
+                                label="Update Ticket"
+                                icon={Pencil}
+                                muted
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  editTicket(ticket);
+                                }}
+                              />
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex flex-col items-center justify-between gap-4 border-t border-line bg-bg-soft px-6 py-4 sm:flex-row">
+                  <span className="text-sm text-muted">
+                    Showing <span className="font-bold text-text">1 - 5</span> of{" "}
+                    <span className="font-bold text-text">24</span> tickets
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <PageButton disabled icon={ChevronLeft} label="Previous page" />
+                    {[1, 2, 3].map((page) => (
+                      <button
+                        className={`h-8 w-8 rounded text-xs font-semibold transition-colors ${
+                          page === 1
+                            ? "bg-primary text-on-primary"
+                            : "text-muted hover:bg-card-muted"
+                        }`}
+                        key={page}
+                        type="button"
+                      >
+                        {page}
+                      </button>
+                    ))}
+                    <PageButton icon={ChevronRight} label="Next page" />
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {selectedTicket && (

@@ -13,6 +13,8 @@ import {
   Lock,
 } from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
+import EmptyState from "../../Components/EmptyState";
+import { HashLoader } from "react-spinners";
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -120,13 +122,14 @@ const ManageUsers = () => {
 
         <div className="overflow-hidden rounded-lg border border-line bg-card shadow-sm">
           {loading ? (
-            <div className="flex justify-center items-center py-10">
-              <span className="text-sm font-semibold text-muted">Loading users...</span>
+            <div className="flex items-center justify-center h-[50dvh]">
+              <HashLoader color="#003c90" />
             </div>
           ) : users.length === 0 ? (
-            <div className="flex justify-center items-center py-10">
-              <span className="text-sm font-semibold text-muted">No users found.</span>
-            </div>
+            <EmptyState
+              title="No users found"
+              description="There are no users in the system yet. Create a new user account to get started."
+            />
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full border-collapse text-left">

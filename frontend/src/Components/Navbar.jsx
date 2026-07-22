@@ -1,12 +1,21 @@
-import { CircleUser } from "lucide-react";
-import React from "react";
+import { CircleUser, Menu, X } from "lucide-react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 
 const Navbar = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const linkClass = ({ isActive }) =>
-    `rounded-md px-3 py-2 transition-colors ${
+    `md:rounded-md px-3 py-2 transition-colors ${
       isActive
         ? "border-b-2 text-primary"
+        : "text-muted hover:bg-bg-soft hover:text-primary"
+    }`;
+
+  const mobileLinkClass = ({ isActive }) =>
+    `block px-4 py-3 rounded-lg transition-colors ${
+      isActive
+        ? "bg-primary/10 text-primary font-semibold"
         : "text-muted hover:bg-bg-soft hover:text-primary"
     }`;
 
@@ -26,7 +35,9 @@ const Navbar = () => {
           Ticket System
         </NavLink>
       </div>
-      <ul className="flex items-center gap-2 text-xs font-semibold  tracking-wider">
+
+      {/* Desktop Navigation */}
+      <ul className="hidden md:flex items-center gap-2 text-xs font-semibold tracking-wider">
         <li>
           <NavLink to="/raise-ticket" className={linkClass}>
             Raise Ticket
@@ -38,7 +49,9 @@ const Navbar = () => {
           </NavLink>
         </li>
       </ul>
-      <div className="flex items-center gap-4">
+
+      {/* Desktop User Actions */}
+      <div className="hidden md:flex items-center gap-4">
         <NavLink to="/settings">
           <CircleUser className="h-5 w-5 cursor-pointer text-muted transition-colors hover:text-primary" />
         </NavLink>
@@ -49,6 +62,61 @@ const Navbar = () => {
           Log Out
         </button>
       </div>
+
+      {/* Mobile Menu Button */}
+      <button
+        className="md:hidden p-2 text-muted hover:text-primary transition-colors"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Mobile Menu */}
+      {isOpen && (
+        <div className="absolute top-full left-0 right-0 bg-card border-b border-line md:hidden shadow-lg">
+          <ul className="flex flex-col p-2 gap-1 text-sm font-semibold">
+            <li>
+              <NavLink
+                to="/raise-ticket"
+                className={mobileLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
+                Raise Ticket
+              </NavLink>
+            </li>
+            <li>
+              <NavLink
+                to="/my-tickets"
+                className={mobileLinkClass}
+                onClick={() => setIsOpen(false)}
+              >
+                View Tickets
+              </NavLink>
+            </li>
+            <li className="border-t border-line mt-2 pt-2">
+              <NavLink
+                to="/settings"
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-muted hover:bg-bg-soft hover:text-primary transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                <CircleUser className="h-5 w-5" />
+                Settings
+              </NavLink>
+            </li>
+            <li>
+              <button
+                onClick={() => {
+                  handleLogout();
+                  setIsOpen(false);
+                }}
+                className="w-full text-left px-4 py-3 rounded-lg text-sm font-semibold text-red-500 hover:bg-red-50 hover:text-red-600 transition-colors cursor-pointer"
+              >
+                Log Out
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
     </nav>
   );
 };

@@ -11,7 +11,11 @@ import { authenticateToken } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", getTickets);
+router.get("/", authenticateToken, getTickets);
+router.get("/metrics", authenticateToken, getTicketMetrics);
+router.post("/", authenticateToken, uploadImages, createTicket);
+router.put("/:id", authenticateToken, uploadImages, updateTicket);
+router.delete("/:id", authenticateToken, deleteTicket);
 router.get("/metrics", getTicketMetrics);
 router.post("/",  uploadImages, createTicket);
 router.put("/:id",  uploadImages, updateTicket);

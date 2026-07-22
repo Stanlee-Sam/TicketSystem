@@ -35,3 +35,6 @@ Thumbs.db
 *.tmp
 *.temp
 .cache/
+
+# Exclude local database migrations from git tracking
+backend/prisma/migrations/

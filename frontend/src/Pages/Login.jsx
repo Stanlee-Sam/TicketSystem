@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import Hero from "../assets/hero.png";
 import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ClipLoader } from "react-spinners";
 import { toast } from "sonner";
-import axios from 'axios'
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -19,7 +20,7 @@ const validationSchema = Yup.object({
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
@@ -29,22 +30,32 @@ const Login = () => {
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        setIsLoading(true);
         const response = await axios.post(`http://localhost:5000/auth/login`, {
           email: values.email,
           password: values.password,
         });
 
         toast.success("Login successful!");
+
+        // Save user session to localStorage
+        localStorage.setItem("token", response.data.accessToken);
+        localStorage.setItem("user", JSON.stringify(response.data.user));
+
         await new Promise((resolve) => setTimeout(resolve, 1500));
         resetForm();
+
+        // Redirect based on role
+        if (response.data.user?.role === "IT_ADMIN") {
+          navigate("/dashboard");
+        } else {
+          navigate("/my-tickets");
+        }
       } catch (error) {
         toast.error(
           error.response?.data?.message || error.message || "Login failed",
         );
       } finally {
         setSubmitting(false);
-        setIsLoading(false);
       }
     },
   });
@@ -202,40 +213,6 @@ const Login = () => {
   );
 };
 
-const SelectField = ({ formik, id, label, name, options, placeholder }) => (
-  <div className="space-y-2">
-    <label
-      className="text-xs font-semibold uppercase tracking-wider text-muted"
-      htmlFor={id}
-    >
-      {label}
-    </label>
-    <div className="relative">
-      <select
-        className="w-full appearance-none rounded-lg border border-line-strong bg-card px-4 py-3 pr-10 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-        id={id}
-        name={name}
-        onBlur={formik.handleBlur}
-        onChange={formik.handleChange}
-        value={formik.values[name]}
-      >
-        <option disabled value="">
-          {placeholder}
-        </option>
-        {options.map(([value, text]) => (
-          <option key={value} value={value}>
-            {text}
-          </option>
-        ))}
-      </select>
-      <ChevronDown
-        className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle"
-        aria-hidden="true"
-      />
-    </div>
-    <FieldError formik={formik} name={name} />
-  </div>
-);
 
 const FieldError = ({ formik, name }) => {
   if (!formik.touched[name] || !formik.errors[name]) {

@@ -88,11 +88,23 @@ npm run dev
 Frontend typically runs on http://localhost:5173
 
 ## Features
-- User authentication (login, password change)
-- Ticket creation, viewing, updating, deletion
-- Department management
-- Role-based access (Staff, IT Admin)
-- File attachments with Cloudinary (optional)
+- **User authentication (login, password change)**:
+  - Supports role-based redirects upon successful login: `IT_ADMIN` is automatically routed to `/dashboard`, and `STAFF` is routed to the `/my-tickets` portal.
+  - Active session state (`accessToken` and user object) is stored securely in the client's `localStorage`.
+- **Ticket creation, viewing, updating, deletion**:
+  - **Role-Based Ticket Visibility**: Standard staff only see the tickets they raised, while IT Administrators see all tickets in the IT Command Center.
+  - **Read-Only Staff Dashboard**: Staff members have a clean, read-only interface where they can track their ticket statuses and view resolution notes from the admin.
+  - **Admin Actions & Status Transitioning**: IT Admins can easily choose an open ticket and transition its status (e.g., `OPEN`, `IN_PROGRESS`, `RESOLVED`) and document resolution update notes.
+- **Department management**:
+  - Links users and tickets to respective hospital departments.
+- **User Administration CRUD Console**:
+  - Exposes a dedicated `/manage-users` route for administrators to view a complete roster of hospital users, edit user profiles (name, email, department), change role flags (`STAFF` vs `IT_ADMIN`), set new passwords safely, and delete user profiles.
+- **Robust Security Middlewares**:
+  - Secured all sensitive backend routes (including user administration and ticket modifications) using `authenticateToken` (JWT verification) and `isAdmin` middleware.
+  - Sensitive `passwordHash` fields are explicitly selected out from database queries on user lists to avoid any over-the-wire credentials leakage.
+- **Axios Request Interceptor**:
+  - Integrates an Axios interceptor in `main.jsx` that automatically attaches the user's `Bearer` session token in the authorization header for all outgoing REST API requests.
+- **File attachments with Cloudinary (optional)**
 
 ## Tech Stack
 ### Backend

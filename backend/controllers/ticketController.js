@@ -101,7 +101,7 @@ export const createTicket = async (req, res) => {
 
     const finalCategory = categoryMap[normalizedCategory] || "OTHER";
 
-    let submitterId = req.userId || req.body.submitterId;
+    let submitterId = req.user?.userId || req.userId || req.body.submitterId;
 
     if (!submitterId) {
       const fallbackUser = await prisma.user.findFirst();

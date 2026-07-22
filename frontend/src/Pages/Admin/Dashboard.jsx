@@ -104,6 +104,7 @@ const Dashboard = () => {
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [editingTicket, setEditingTicket] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [ticketMetrics, setTicketMetrics] = useState({});
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
@@ -125,7 +126,67 @@ const Dashboard = () => {
     const fetchTickets = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/ticket`);
-        setTickets(response.data);
+        const processedTickets = response.data.map((ticket) => {
+          // Format date and time
+          const date = new Date(ticket.createdAt);
+          const createdAt = date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+          const createdTime = date.toLocaleTimeString("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+
+          // Priority class mapping
+          let priorityClass;
+          switch (ticket.priority) {
+            case "CRITICAL":
+              priorityClass = "text-danger";
+              break;
+            case "HIGH":
+              priorityClass = "text-danger-dark";
+              break;
+            case "MEDIUM":
+              priorityClass = "text-warning";
+              break;
+            case "LOW":
+            default:
+              priorityClass = "text-primary";
+              break;
+          }
+
+          // Status class mapping
+          let statusClass;
+          switch (ticket.status) {
+            case "OPEN":
+              statusClass = "bg-primary text-on-primary";
+              break;
+            case "IN_PROGRESS":
+              statusClass = "bg-warning-soft text-tertiary";
+              break;
+            case "RESOLVED":
+              statusClass = "bg-success text-on-primary";
+              break;
+            case "CLOSED":
+              statusClass = "bg-inverse text-on-inverse";
+              break;
+            default:
+              statusClass = "bg-secondary text-secondary";
+              break;
+          }
+
+          return {
+            ...ticket,
+            createdAt,
+            createdTime,
+            priorityClass,
+            statusClass,
+            id: ticket.id, 
+          };
+        });
+        setTickets(processedTickets);
       } catch (error) {
         toast.error("Failed to fetch tickets:", error);
       } finally {
@@ -136,11 +197,25 @@ const Dashboard = () => {
     fetchTickets();
   }, []);
 
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:5000/ticket/metrics`,
+        );
+        setTicketMetrics(response.data);
+      } catch (error) {
+        toast.error("Failed to fetch ticket metrics:", error);
+      }
+    };
+    fetchMetrics();
+  }, []);
+
   return (
     <div className="min-h-screen">
-      <div className="flex min-h-screen">
+      <div className="min-h-screen">
         <Sidebar />
-        <main className="flex-1 flex flex-col gap-5 p-10 overflow-y-auto bg-bg">
+        <main className="flex-1 flex flex-col gap-5 p-10 overflow-y-auto bg-bg lg:pl-80 xl:pl-72">
           <div className="flex flex-col gap-2 md:flex-row md:justify-between md:items-end py-3">
             <div>
               <h1 className="text-3xl font-bold text-text">
@@ -161,12 +236,14 @@ const Dashboard = () => {
                 <div className="p-2 bg-secondary/50 rounded-lg">
                   <Inbox className="text-primary h-6 w-6" />
                 </div>
-                <span className="font-semibold text-success">+4% from avg</span>
+                {/* <span className="font-semibold text-success">+4% from avg</span> */}
               </div>
               <p className="text-sm text-secondary font-semibold">
                 Open Tickets
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-text">08</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">
+                {ticketMetrics.byStatus?.OPEN || 0}
+              </h2>
             </div>
             <div className="bg-card border-2 border-danger/20 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
@@ -180,7 +257,9 @@ const Dashboard = () => {
               <p className="text-sm text-secondary font-semibold">
                 High Priority
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-danger">02</h2>
+              <h2 className="font-bold text-4xl mt-1 text-danger">
+                {ticketMetrics.byPriority?.CRITICAL || 0}
+              </h2>
             </div>
             <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
@@ -192,7 +271,9 @@ const Dashboard = () => {
               <p className="text-sm text-secondary font-semibold">
                 In Progress
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-text">12</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">
+                {ticketMetrics.byStatus?.IN_PROGRESS || 0}
+              </h2>
             </div>
             <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start mb-2">
@@ -204,7 +285,9 @@ const Dashboard = () => {
               <p className="text-sm text-secondary font-semibold">
                 Resolved (24h)
               </p>
-              <h2 className="font-bold text-4xl mt-1 text-text">15</h2>
+              <h2 className="font-bold text-4xl mt-1 text-text">
+                {ticketMetrics.byStatus?.RESOLVED || 0}
+              </h2>
             </div>
           </div>
           <div className="bg-secondary/5 border border-line rounded-xl p-4 mb-4 flex flex-col items-start gap-3">
@@ -301,9 +384,9 @@ const Dashboard = () => {
                         <span
                           className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
                         >
-                          {/* {ticket.pulse && (
+                          {ticket.priority === "CRITICAL" && (
                             <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-                          )} */}
+                          )}
                           {ticket.priority}
                         </span>
                       </td>
@@ -688,11 +771,11 @@ const TicketCard = ({ ticket, onOpenModal, onUpdateTicket }) => (
           Priority
         </p>
         <span
-          className={`mt-1 items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
+          className={`mt-1 inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
         >
-          {/* {ticket.pulse && (
+          {ticket.priority === "CRITICAL" && (
             <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-          )} */}
+          )}
           {ticket.priority}
         </span>
       </div>

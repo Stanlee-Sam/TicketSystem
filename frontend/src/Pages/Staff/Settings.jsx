@@ -1,10 +1,12 @@
 import React from "react";
 import { Eye, LockKeyhole, Save, User } from "lucide-react";
+import Navbar from "../../Components/Navbar";
 
 const Settings = () => {
   return (
-    <div className="min-h-screen bg-bg p-6">
-      <main className="flex min-h-screen justify-center px-4 py-12">
+    <div className="min-h-screen bg-bg ">
+      <Navbar />
+      <main className="flex min-h-screen justify-center px-4 py-12 mt-9">
         <div className="flex w-full max-w-2xl flex-col gap-5">
           <div className="mb-1">
             <h1 className="mb-2 font-heading text-3xl font-bold text-text">

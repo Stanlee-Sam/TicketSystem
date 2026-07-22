@@ -278,3 +278,48 @@ export const deleteTicket = async (req, res) => {
     res.status(500).json({ message: "Failed to delete ticket" });
   }
 };
+
+export const getTicketMetrics = async (req, res) => {
+  try {
+    // 1. Query database for counts grouped by status and priority
+    const rawCounts = await prisma.ticket.groupBy({
+      by: ["status", "priority"],
+      _count: {
+        id: true,
+      },
+    });
+
+    // 2. Format the response object structures
+    const statusCounts = {};
+    const priorityCounts = {};
+    let totalTickets = 0;
+
+    rawCounts.forEach((group) => {
+      const count = group._count.id;
+      totalTickets += count;
+
+      // Sum up totals by status
+      statusCounts[group.status] = (statusCounts[group.status] || 0) + count;
+
+      // Sum up totals by priority
+      priorityCounts[group.priority] =
+        (priorityCounts[group.priority] || 0) + count;
+    });
+
+    return res.status(200).json({
+        total: totalTickets,
+        byStatus: statusCounts,
+        byPriority: priorityCounts,
+        rawBreakdown: rawCounts.map((g) => ({
+          status: g.status,
+          priority: g.priority,
+          count: g._count.id,
+        })),
+    });
+  } catch (error) {
+    console.error("Error fetching ticket metrics:", error);
+    return res.status(500).json({
+      message: "Failed to retrieve ticket metrics.",
+    });
+  }
+};

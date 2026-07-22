@@ -4,6 +4,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import Navbar from "../../Components/Navbar";
 import { toast } from "sonner";
+import axios from "axios";
 
 const validationSchema = Yup.object({
   title: Yup.string().required("Ticket title is required"),
@@ -36,15 +37,34 @@ const RaiseTicket = () => {
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        console.log(values);
+        const formData = new FormData();
+
+        formData.append("title", values.title);
+        formData.append("description", values.description);
+        formData.append("priority", values.priority);
+        formData.append("category", values.category);
+
+        values.images.forEach((file) => {
+          formData.append(`images`, file);
+        });
+
+        const response = await axios.post(`http://localhost:5000/ticket`,
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        )
         toast.success("Ticket submitted successfully!");
-        await new Promise((resolve) => setTimeout(resolve, 1500));
         resetForm();
+
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
         }
+
       } catch (error) {
-        toast.error(error);
+        toast.error(error.response?.data.message || "Something went wrong");
       } finally {
         setSubmitting(false);
       }
@@ -54,7 +74,7 @@ const RaiseTicket = () => {
   return (
     <div>
       <Navbar />
-      <main className="flex min-h-screen items-start justify-center bg-bg px-4 py-10 font-body">
+      <main className="flex min-h-screen items-start justify-center bg-bg px-4 py-10 font-body mt-9">
         <div className="w-full max-w-4xl overflow-hidden rounded-lg border border-line bg-card shadow-sm">
           <div className="border-b border-line bg-card-soft px-6 py-6">
             <h1 className="font-heading text-xl font-semibold text-text">

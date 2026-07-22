@@ -88,9 +88,9 @@ const CreateUser = () => {
   });
 
   return (
-    <div className="flex min-h-screen">
+    <div className="min-h-screen">
       <Sidebar />
-      <main className="flex p-10 min-h-screen items-center justify-center px-4 py-12">
+      <main className="flex p-10 min-h-screen items-center justify-center px-4 py-12 lg:pl-80 xl:pl-72">
         <div className="w-full max-w-2xl">
           <div className="mb-6">
             <h1 className="font-heading text-3xl font-bold text-text">

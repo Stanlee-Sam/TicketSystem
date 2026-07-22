@@ -1,13 +1,6 @@
 import React, { useState } from "react";
-import {
-  Menu,
-  ChevronLeft,
-  ChevronRight,
-  Home,
-  BarChart2,
-  Settings,
-  Users,
-} from "lucide-react";
+import { Link } from "react-router-dom";
+import { Menu, ChevronLeft, ChevronRight, Home, Users } from "lucide-react";
 
 export default function Sidebar() {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -21,11 +14,9 @@ export default function Sidebar() {
     setIsMobileOpen((value) => !value);
   };
 
-  const menuItems = [
-    { icon: <Home size={20} />, label: "Dashboard" },
-    { icon: <BarChart2 size={20} />, label: "Analytics" },
-    { icon: <Users size={20} />, label: "Team" },
-    { icon: <Settings size={20} />, label: "Settings" },
+  const adminMenuItems = [
+    { icon: <Home size={20} />, label: "Dashboard", to: "/dashboard" },
+    { icon: <Users size={20} />, label: "Create User", to: "/create-user" },
   ];
 
   const content = (
@@ -48,15 +39,15 @@ export default function Sidebar() {
               isCollapsed ? "scale-0 opacity-0" : "scale-100 opacity-100"
             }`}
           >
-            Admin panel
+            TicketSystem
           </h1>
         </div>
 
         <nav className="flex flex-col gap-y-2">
-          {menuItems.map((item, index) => (
-            <a
+          {adminMenuItems.map((item, index) => (
+            <Link
               key={index}
-              href={`#${item.label.toLowerCase()}`}
+              to={item.to}
               className="flex items-center gap-x-4 rounded-lg border border-transparent px-3 py-3 text-base font-semibold text-slate-100 transition-all duration-200 hover:border-slate-700 hover:bg-slate-800 hover:text-white"
               onClick={() => setIsMobileOpen(false)}
             >
@@ -72,7 +63,7 @@ export default function Sidebar() {
               >
                 {item.label}
               </span>
-            </a>
+            </Link>
           ))}
         </nav>
       </div>
@@ -84,8 +75,8 @@ export default function Sidebar() {
         <div
           className={`duration-200 flex flex-col ${isCollapsed ? "hidden" : "block"}`}
         >
-          <span className="text-sm font-medium">John Doe</span>
-          <span className="text-xs text-gray-400">admin@app.com</span>
+          <span className="text-sm font-medium">Admin User</span>
+          <span className="text-xs text-gray-400">admin@ticketsystem.com</span>
         </div>
       </div>
     </>
@@ -96,7 +87,7 @@ export default function Sidebar() {
       <button
         type="button"
         onClick={toggleMobileMenu}
-        className={`fixed ${isMobileOpen ? "left-58" : "left-4"} top-4 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-all duration-300 lg:hidden`}
+        className={`fixed ${isMobileOpen ? "left-60" : "left-4"} top-4 z-50 inline-flex h-11 w-11 items-center justify-center rounded-full bg-slate-900 text-white shadow-lg transition-all duration-300 lg:hidden`}
         aria-label={isMobileOpen ? "Close sidebar" : "Open sidebar"}
       >
         {isMobileOpen ? <ChevronLeft size={20} /> : <Menu size={20} />}
@@ -123,7 +114,7 @@ export default function Sidebar() {
       </div>
 
       <aside
-        className={`relative hidden h-screen bg-slate-900 p-5 pt-8 text-white duration-300 lg:flex lg:flex-col lg:justify-between ${
+        className={`fixed left-0 top-0 z-40 hidden h-screen bg-slate-900 p-5 pt-8 text-white duration-300 lg:flex lg:flex-col lg:justify-between ${
           isCollapsed ? "w-20" : "w-64"
         }`}
       >

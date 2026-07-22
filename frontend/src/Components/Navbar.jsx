@@ -11,9 +11,12 @@ const Navbar = () => {
     }`;
 
   return (
-    <nav className="flex items-center justify-between border-b border-line bg-card px-6 py-4 font-body">
+    <nav className="flex items-center justify-between border-b border-line bg-card px-6 py-4 font-body fixed z-50 top-0 left-0 right-0 w-full">
       <div>
-        <NavLink to="/raise-ticket" className="font-heading text-lg font-bold text-primary">
+        <NavLink
+          to="/raise-ticket"
+          className="font-heading text-lg font-bold text-primary"
+        >
           Ticket System
         </NavLink>
       </div>
@@ -30,7 +33,9 @@ const Navbar = () => {
         </li>
       </ul>
       <div>
-        <CircleUser className="h-5 w-5 cursor-pointer text-muted transition-colors hover:text-primary" />
+        <NavLink to="/settings">
+          <CircleUser className="h-5 w-5 cursor-pointer text-muted transition-colors hover:text-primary" />
+        </NavLink>
       </div>
     </nav>
   );

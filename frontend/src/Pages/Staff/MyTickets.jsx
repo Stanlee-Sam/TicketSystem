@@ -145,7 +145,7 @@ const MyTickets = () => {
   
 
   return (
-    <div className="min-h-screen bg-bg font-body text-text">
+    <div className="min-h-screen bg-bg font-body text-text mt-9">
       <Navbar />
       <main className="flex flex-col gap-4 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
         <div className="my-4 flex flex-col justify-between gap-4 md:flex-row md:items-end">

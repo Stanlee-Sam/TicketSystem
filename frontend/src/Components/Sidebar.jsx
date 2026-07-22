@@ -1,8 +1,13 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, ChevronLeft, ChevronRight, Home, Users } from "lucide-react";
+import { Menu, ChevronLeft, ChevronRight, Home, Users, LogOut } from "lucide-react";
 
 export default function Sidebar() {
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
@@ -17,6 +22,7 @@ export default function Sidebar() {
   const adminMenuItems = [
     { icon: <Home size={20} />, label: "Dashboard", to: "/dashboard" },
     { icon: <Users size={20} />, label: "Create User", to: "/create-user" },
+    { icon: <Users size={20} />, label: "Manage Users", to: "/manage-users" },
   ];
 
   const content = (
@@ -68,16 +74,33 @@ export default function Sidebar() {
         </nav>
       </div>
 
-      <div className="border-t border-slate-800 pt-4 flex items-center gap-x-4">
-        <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold">
-          U
+      <div className="border-t border-slate-800 pt-4 flex flex-col gap-y-2">
+        <div className="flex items-center gap-x-4">
+          <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center font-bold">
+            U
+          </div>
+          <div
+            className={`duration-200 flex flex-col ${isCollapsed ? "hidden" : "block"}`}
+          >
+            <span className="text-sm font-medium">Admin User</span>
+            <span className="text-xs text-gray-400">admin@ticketsystem.com</span>
+          </div>
         </div>
-        <div
-          className={`duration-200 flex flex-col ${isCollapsed ? "hidden" : "block"}`}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-x-4 rounded-lg px-3 py-2 text-sm font-semibold text-red-400 hover:bg-slate-800 hover:text-red-300 transition-all duration-200 cursor-pointer"
         >
-          <span className="text-sm font-medium">Admin User</span>
-          <span className="text-xs text-gray-400">admin@ticketsystem.com</span>
-        </div>
+          <div className="flex min-w-6 items-center justify-center">
+            <LogOut size={18} />
+          </div>
+          <span
+            className={`whitespace-nowrap transition-all duration-200 ${
+              isCollapsed ? "w-0 opacity-0 overflow-hidden" : "w-auto opacity-100"
+            }`}
+          >
+            Log Out
+          </span>
+        </button>
       </div>
     </>
   );

@@ -3,3 +3,6 @@ node_modules
 .env
 
 /generated/prisma
+
+# Exclude local database migrations from git tracking
+prisma/migrations

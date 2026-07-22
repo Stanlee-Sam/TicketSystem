@@ -164,9 +164,22 @@ export const createTicket = async (req, res) => {
 
 export const getTickets = async (req, res) => {
   try {
-    const tickets = await prisma.ticket.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const userRole = req.user?.role?.toUpperCase();
+    const userId = req.user?.userId;
+
+    let tickets;
+    if (userRole === "IT_ADMIN" || userRole === "ADMIN") {
+      tickets = await prisma.ticket.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      tickets = await prisma.ticket.findMany({
+        where: {
+          submitterId: userId,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
     res.status(200).json(tickets);
   } catch (error) {
     console.error("Error fetching tickets:", error);

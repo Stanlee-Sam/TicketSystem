@@ -1,6 +1,5 @@
 import {
   CheckCircle,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
   CircleAlert,
@@ -12,10 +11,8 @@ import {
   Mail,
   MapPin,
   MessageCircle,
-  Pencil,
   Phone,
   Plus,
-  Save,
   Search,
   User,
   UserCheck,
@@ -24,76 +21,9 @@ import {
 } from "lucide-react";
 import Navbar from "../../Components/Navbar";
 import { Link } from "react-router-dom";
-import { useState } from "react";
-
-const tickets = [
-  {
-    id: "#TK-88421",
-    title: "Epic Login Failure - Ward 4B",
-    category: "Auth Module",
-    priority: "CRITICAL",
-    priorityClass: "text-danger",
-    status: "OPEN",
-    statusClass: "bg-primary text-on-primary",
-    createdAt: "Oct 24, 2024",
-    createdTime: "08:14 AM",
-    pulse: true,
-    description:
-      "Staff in Ward 4B cannot reliably sign in to Epic. Login attempts intermittently time out before patient charts load.",
-  },
-  {
-    id: "#TK-88415",
-    title: "Printer Jam - Floor 3 Nurse Station",
-    category: "Hardware",
-    priority: "MEDIUM",
-    priorityClass: "text-warning",
-    status: "IN PROGRESS",
-    statusClass: "bg-warning-soft text-tertiary",
-    createdAt: "Oct 23, 2024",
-    createdTime: "11:45 PM",
-    description:
-      "The nurse station printer on Floor 3 is jammed and blocking medication label printing.",
-  },
-  {
-    id: "#TK-88409",
-    title: "VPN Connection Issues - Remote Staff",
-    category: "Networking",
-    priority: "HIGH",
-    priorityClass: "text-danger-dark",
-    status: "RESOLVED",
-    statusClass: "bg-success text-on-primary",
-    createdAt: "Oct 23, 2024",
-    createdTime: "04:30 PM",
-    description:
-      "Remote staff are seeing repeated VPN disconnects while accessing patient systems from off-site locations.",
-  },
-  {
-    id: "#TK-88390",
-    title: "Software Update - Lab Terminals",
-    category: "Maintenance",
-    priority: "LOW",
-    priorityClass: "text-primary",
-    status: "CLOSED",
-    statusClass: "bg-inverse text-on-inverse",
-    createdAt: "Oct 22, 2024",
-    createdTime: "09:12 AM",
-    description:
-      "Lab terminal software updates were requested and completed during the scheduled maintenance window.",
-  },
-  {
-    id: "#TK-88432",
-    title: "New Keyboard Request - Oncology",
-    category: "Procurement",
-    priority: "LOW",
-    priorityClass: "text-primary",
-    status: "OPEN",
-    statusClass: "bg-primary text-on-primary",
-    createdAt: "Oct 24, 2024",
-    createdTime: "10:05 AM",
-    description:
-      "Oncology requested a replacement ergonomic keyboard for a clinical workstation.",
-  },
-];
+import { useState, useEffect } from "react";
+import axios from "axios";
+import { toast } from "sonner";
 
 const stats = [
   {
@@ -123,8 +53,8 @@ const stats = [
 ];
 
 const MyTickets = () => {
+  const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
-  const [editingTicket, setEditingTicket] = useState(null);
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
@@ -134,13 +64,80 @@ const MyTickets = () => {
     setSelectedTicket(null);
   };
 
-  const editTicket = (ticket) => {
-    setEditingTicket(ticket);
+  const fetchTickets = async () => {
+    try {
+      const response = await axios.get("http://localhost:5000/ticket");
+      const processedTickets = response.data.map((ticket) => {
+        const date = new Date(ticket.createdAt);
+        const createdAt = date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+        });
+        const createdTime = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        // Priority class mapping
+        let priorityClass;
+        switch (ticket.priority) {
+          case "CRITICAL":
+            priorityClass = "text-danger";
+            break;
+          case "HIGH":
+            priorityClass = "text-danger-dark";
+            break;
+          case "MEDIUM":
+            priorityClass = "text-warning";
+            break;
+          case "LOW":
+          default:
+            priorityClass = "text-primary";
+            break;
+        }
+
+        // Status class mapping
+        let statusClass;
+        switch (ticket.status) {
+          case "OPEN":
+            statusClass = "bg-primary text-on-primary";
+            break;
+          case "IN_PROGRESS":
+            statusClass = "bg-warning-soft text-tertiary";
+            break;
+          case "RESOLVED":
+            statusClass = "bg-success text-on-primary";
+            break;
+          case "CLOSED":
+            statusClass = "bg-inverse text-on-inverse";
+            break;
+          default:
+            statusClass = "bg-secondary text-secondary";
+            break;
+        }
+
+        return {
+          ...ticket,
+          createdAt,
+          createdTime,
+          priorityClass,
+          statusClass,
+        };
+      });
+      setTickets(processedTickets);
+    } catch (error) {
+      toast.error("Failed to fetch tickets");
+      console.error(error);
+    }
   };
 
-  const closeEditing = () => {
-    setEditingTicket(null);
-  };
+  useEffect(() => {
+    const init = async () => {
+      await fetchTickets();
+    };
+    init();
+  }, []);
 
   
 
@@ -202,7 +199,6 @@ const MyTickets = () => {
                 key={ticket.id}
                 ticket={ticket}
                 onOpenModal={openModal}
-                onEditTicket={editTicket}
               />
             ))}
           </div>
@@ -246,7 +242,7 @@ const MyTickets = () => {
                           {ticket.title}
                         </span>
                         <span className="text-xs text-subtle">
-                          ID: {ticket.id} &bull; {ticket.category}
+                          ID: {ticket.ticketNumber} &bull; {ticket.category}
                         </span>
                       </div>
                     </td>
@@ -254,9 +250,6 @@ const MyTickets = () => {
                       <span
                         className={`inline-flex items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
                       >
-                        {ticket.pulse && (
-                          <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-                        )}
                         {ticket.priority}
                       </span>
                     </td>
@@ -271,24 +264,17 @@ const MyTickets = () => {
                       {ticket.createdAt} &bull; {ticket.createdTime}
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <IconButton
-                          label="View Details"
-                          icon={Eye}
+                      <div className="flex items-center justify-end">
+                        <button
                           onClick={(event) => {
                             event.stopPropagation();
                             openModal(ticket);
                           }}
-                        />
-                        <IconButton
-                          label="Update Ticket"
-                          icon={Pencil}
-                          muted
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            editTicket(ticket);
-                          }}
-                        />
+                          className="flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-1.5 text-xs font-semibold text-primary transition-colors hover:bg-primary/10 cursor-pointer"
+                        >
+                          <Eye className="h-4 w-4" />
+                          <span>View Details</span>
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -364,18 +350,11 @@ const MyTickets = () => {
                 <span className="text-xs font-bold uppercase tracking-wider text-muted">
                   STATUS:
                 </span>
-                <div className="relative">
-                  <select
-                    className="cursor-pointer appearance-none rounded-lg border border-line-strong bg-card py-1 pl-3 pr-8 text-xs font-bold text-primary transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-                    defaultValue={selectedTicket.status}
-                  >
-                    <option>OPEN</option>
-                    <option>IN PROGRESS</option>
-                    <option>PENDING VENDOR</option>
-                    <option>RESOLVED</option>
-                  </select>
-                  <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none h-5 w-5" />
-                </div>
+                <span
+                  className={`rounded-full px-2.5 py-1 text-xs font-bold ${selectedTicket.statusClass}`}
+                >
+                  {selectedTicket.status}
+                </span>
               </div>
               <div className="hidden h-4 w-px bg-line sm:block"></div>
               <div className="flex items-center gap-2">
@@ -405,6 +384,14 @@ const MyTickets = () => {
                     </h3>
                     <div className="rounded-lg border border-line bg-bg-soft p-4 text-sm leading-relaxed text-text">
                       {selectedTicket.description || "No description provided."}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
+                      Resolution & Admin Update Notes
+                    </h3>
+                    <div className="rounded-lg border border-line bg-bg-soft p-4 text-sm leading-relaxed text-text font-medium italic">
+                      {selectedTicket.resolutionNote || "No update notes from the admin yet."}
                     </div>
                   </div>
                   <div className="space-y-2">
@@ -492,100 +479,12 @@ const MyTickets = () => {
                 </aside>
               </div>
             </div>
-            <footer className="flex items-center justify-end gap-3 border-t border-line bg-card-soft px-5 py-4">
+            <footer className="flex items-center justify-end border-t border-line bg-card-soft px-5 py-4">
               <button
                 onClick={() => closeModal()}
-                className="rounded-lg border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
+                className="rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95 cursor-pointer"
               >
-                Cancel
-              </button>
-              <button className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95">
-                <Save className="h-5 w-5" />
-                Save Changes
-              </button>
-            </footer>
-          </div>
-        </div>
-      )}
-
-      {editingTicket && (
-        <div
-          onClick={closeEditing}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm"
-        >
-          <div
-            className="flex w-full max-w-xl flex-col overflow-hidden rounded-lg border border-line bg-card shadow-xl"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <header className="flex items-start justify-between gap-4 border-b border-line bg-card-soft px-5 py-4">
-              <div>
-                <span className="mb-1 block text-xs font-bold uppercase tracking-wider text-primary">
-                  {editingTicket.id}
-                </span>
-                <h2 className="text-xl font-bold text-text">
-                  Update Ticket
-                </h2>
-              </div>
-              <button
-                className="rounded-lg p-2 text-muted transition-colors hover:bg-card-muted hover:text-danger"
-                onClick={closeEditing}
-                type="button"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </header>
-
-            <div className="space-y-4 p-5">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-wider text-muted">
-                  Ticket
-                </p>
-                <p className="mt-1 text-sm font-semibold text-text">
-                  {editingTicket.title}
-                </p>
-              </div>
-
-              <label className="block">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted">
-                  Status
-                </span>
-                <select
-                  className="mt-2 w-full rounded-lg border border-line-strong bg-card px-4 py-2.5 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-                  defaultValue={editingTicket.status}
-                >
-                  <option>OPEN</option>
-                  <option>IN PROGRESS</option>
-                  <option>PENDING VENDOR</option>
-                  <option>RESOLVED</option>
-                  <option>CLOSED</option>
-                </select>
-              </label>
-
-              <label className="block">
-                <span className="text-xs font-bold uppercase tracking-wider text-muted">
-                  Update Notes
-                </span>
-                <textarea
-                  className="mt-2 h-32 w-full resize-none rounded-lg border border-line-strong bg-card px-4 py-3 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-                  placeholder="Add any follow-up details for this ticket..."
-                />
-              </label>
-            </div>
-
-            <footer className="flex justify-end gap-3 border-t border-line bg-card-soft px-5 py-4">
-              <button
-                className="rounded-lg border border-primary px-5 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5"
-                onClick={closeEditing}
-                type="button"
-              >
-                Cancel
-              </button>
-              <button
-                className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95"
-                type="button"
-              >
-                <Save className="h-5 w-5" />
-                Save Update
+                Close Details
               </button>
             </footer>
           </div>
@@ -608,12 +507,12 @@ const FilterSelect = ({ label, options }) => (
   </div>
 );
 
-const TicketCard = ({ ticket, onOpenModal, onEditTicket }) => (
+const TicketCard = ({ ticket, onOpenModal }) => (
   <article className="p-4 flex flex-col gap-3">
     <div className="flex  items-start gap-3">
       <div className="min-w-0 flex-1">
         <p className="text-[11px] font-semibold uppercase tracking-wider text-subtle">
-          {ticket.id}
+          {ticket.ticketNumber}
         </p>
         <h2 className="mt-1 text-[15px] font-semibold leading-5 text-text">
           {ticket.title}
@@ -635,9 +534,6 @@ const TicketCard = ({ ticket, onOpenModal, onEditTicket }) => (
         <span
           className={`mt-1 items-center gap-1.5 text-xs font-bold ${ticket.priorityClass}`}
         >
-          {ticket.pulse && (
-            <span className="h-2 w-2 rounded-full bg-danger animate-pulse" />
-          )}
           {ticket.priority}
         </span>
       </div>
@@ -654,39 +550,18 @@ const TicketCard = ({ ticket, onOpenModal, onEditTicket }) => (
       </div>
     </div>
 
-    <div className="mt-3 grid grid-cols-2 gap-2">
+    <div className="mt-3">
       <button
         onClick={() => onOpenModal(ticket)}
-        className="flex items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md"
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-primary/20 bg-primary px-3 py-2.5 text-sm font-semibold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary-soft hover:shadow-md cursor-pointer"
       >
         <Eye size={16} />
         <span>View Details</span>
-      </button>
-      <button
-        onClick={() => onEditTicket(ticket)}
-        className="flex items-center justify-center gap-2 rounded-xl border border-line bg-card px-3 py-2.5 text-sm font-semibold text-text shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:text-primary hover:shadow-md"
-      >
-        <Pencil size={16} />
-        <span>Update Ticket</span>
       </button>
     </div>
   </article>
 );
 
-const IconButton = ({ icon: Icon, label, muted = false, onClick }) => (
-  <button
-    onClick={onClick}
-    className={`rounded-lg p-2 transition-colors hover:bg-card-muted ${
-      muted
-        ? "text-muted hover:text-text"
-        : "text-primary hover:text-primary-soft"
-    }`}
-    title={label}
-    type="button"
-  >
-    <Icon className="h-5 w-5" aria-hidden="true" />
-  </button>
-);
 
 const PageButton = ({ disabled = false, icon: Icon, label }) => (
   <button

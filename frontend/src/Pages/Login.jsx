@@ -1,6 +1,6 @@
 import { useState } from "react";
 import Hero from "../assets/hero.png";
-import { Eye, EyeOff, Lock, LogIn, Mail } from "lucide-react";
+import { Eye, EyeOff, Hospital, Lock, LogIn, Mail } from "lucide-react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import { ClipLoader } from "react-spinners";
@@ -85,11 +85,7 @@ const Login = () => {
         <section className="flex flex-1 items-center justify-center bg-card p-6 sm:p-10">
           <div className="flex w-full max-w-md flex-col gap-6">
             <div className="flex flex-col items-center gap-3">
-              <img
-                alt="Wama Hospital Logo"
-                className="h-[60px] w-auto"
-                src="https://lh3.googleusercontent.com/aida/AP1WRLuRviZ64_O0sr1vcxRDUaalAR075OFV7r7xoftzU7rDQY-r1asnTFcskOpy3pYnuZGjalUp0izRq0Z2uuL0Zf-P6LgDe8VBa3Kuj5XuNT6la3iH3IiVh3W9kft8j_qmkQ1e8MJ0enNbm990ri2mte0uVcK494GbDM4RlxrRjTP9wMYi00uGScZ3rAyPUt0Dygq-MR74m5E6LLwVep46YTSjiBZe9Zq2PB6Y7phxdMRvB36M4EZwgaPCokPT"
-              />
+              <Hospital />
               <div className="h-1 w-12 rounded-full bg-primary" />
             </div>
 

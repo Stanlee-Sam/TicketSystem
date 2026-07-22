@@ -35,15 +35,16 @@ npm install
 ```
 
 3. Configure environment variables:
-Create a `.env` file in `backend/` directory with the following content:
-```env
-DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/DATABASE_NAME?schema=public"
-JWT_SECRET="your-super-secret-jwt-key-here"
-# Optional: Cloudinary config if using file uploads
-CLOUDINARY_CLOUD_NAME=""
-CLOUDINARY_API_KEY=""
-CLOUDINARY_API_SECRET=""
+Copy the example environment file and update it with your values:
+```bash
+cp .env.example .env
 ```
+
+Then edit the `.env` file with your actual configuration:
+- `DATABASE_URL`: Your PostgreSQL connection string
+- `JWT_SECRET`: A secure secret key for JWT authentication
+- `PORT`: Server port (default: 5000)
+- `CLOUDINARY_*`: Optional Cloudinary credentials for file uploads
 
 **Note**: Replace the DATABASE_URL with your actual PostgreSQL connection details.
 
@@ -81,7 +82,18 @@ cd frontend
 npm install
 ```
 
-3. Start frontend dev server:
+3. Configure environment variables:
+Copy the example environment file and update it with your values:
+```bash
+cp .env.example .env
+```
+
+Then edit the `.env` file with your actual configuration:
+- `VITE_API_BASE_URL`: Backend API URL (default: http://localhost:5000)
+- `VITE_APP_NAME`: Application name
+- `VITE_APP_TITLE`: Application title
+
+4. Start frontend dev server:
 ```bash
 npm run dev
 ```

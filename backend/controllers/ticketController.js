@@ -23,6 +23,35 @@ const ticketSchema = Joi.object({
     .required(),
 });
 
+const ticketUpdateSchema = Joi.object({
+  title: Joi.string().trim().optional(),
+  description: Joi.string().trim().optional(),
+  priority: Joi.string()
+    .trim()
+    .valid("low", "medium", "high", "critical", "LOW", "MEDIUM", "HIGH", "CRITICAL")
+    .optional(),
+  category: Joi.string()
+    .trim()
+    .valid(
+      "hardware",
+      "software",
+      "network",
+      "printer",
+      "email",
+      "other",
+      "access",
+      "HARDWARE",
+      "SOFTWARE",
+      "NETWORK",
+      "PRINTER",
+      "EMAIL",
+      "OTHER",
+    )
+    .optional(),
+  status: Joi.string().trim().valid("OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED", "PENDING VENDOR", "IN PROGRESS").optional(),
+  resolutionNote: Joi.string().trim().allow("", null).optional(),
+});
+
 const paramsSchema = Joi.object({
   id: Joi.string().required(),
 });
@@ -135,9 +164,22 @@ export const createTicket = async (req, res) => {
 
 export const getTickets = async (req, res) => {
   try {
-    const tickets = await prisma.ticket.findMany({
-      orderBy: { createdAt: "desc" },
-    });
+    const userRole = req.user?.role?.toUpperCase();
+    const userId = req.user?.userId;
+
+    let tickets;
+    if (userRole === "IT_ADMIN" || userRole === "ADMIN") {
+      tickets = await prisma.ticket.findMany({
+        orderBy: { createdAt: "desc" },
+      });
+    } else {
+      tickets = await prisma.ticket.findMany({
+        where: {
+          submitterId: userId,
+        },
+        orderBy: { createdAt: "desc" },
+      });
+    }
     res.status(200).json(tickets);
   } catch (error) {
     console.error("Error fetching tickets:", error);
@@ -147,7 +189,7 @@ export const getTickets = async (req, res) => {
 
 export const updateTicket = async (req, res) => {
   try {
-    const { error, value } = ticketSchema.validate(req.body, {
+    const { error, value } = ticketUpdateSchema.validate(req.body, {
       abortEarly: false,
     });
     const { error: paramsError } = paramsSchema.validate(req.params);
@@ -165,12 +207,8 @@ export const updateTicket = async (req, res) => {
       });
     }
     const ticketId = req.params.id;
-    const { title, description, priority, category } = value;
+    const { title, description, priority, category, status, resolutionNote } = value;
     const uploadedFiles = req.files || [];
-
-    if (!title || !description || !priority || !category) {
-      return res.status(400).json({ message: "Missing required fields" });
-    }
 
     const ticket = await prisma.ticket.findUnique({
       where: {
@@ -182,46 +220,70 @@ export const updateTicket = async (req, res) => {
       return res.status(404).json({ message: "Ticket not found" });
     }
 
-    const normalizedPriority = priority?.toLowerCase();
+    const updateData = {};
 
-    const priorityMap = {
-      low: "LOW",
-      medium: "MEDIUM",
-      high: "HIGH",
-      critical: "CRITICAL",
-    };
+    if (title !== undefined) {
+      updateData.title = title;
+    }
 
-    const finalPriority = priorityMap[normalizedPriority] || "MEDIUM";
+    if (description !== undefined) {
+      updateData.description = description;
+    }
 
-    const normalizedCategory = category?.toLowerCase();
+    if (priority !== undefined) {
+      const normalizedPriority = priority.toLowerCase();
+      const priorityMap = {
+        low: "LOW",
+        medium: "MEDIUM",
+        high: "HIGH",
+        critical: "CRITICAL",
+      };
+      updateData.priority = priorityMap[normalizedPriority] || "MEDIUM";
+    }
 
-    const categoryMap = {
-      software: "SOFTWARE",
-      hardware: "HARDWARE",
-      network: "NETWORK",
-      printer: "PRINTER",
-      email: "EMAIL",
-      other: "OTHER",
-      access: "OTHER",
-    };
+    if (category !== undefined) {
+      const normalizedCategory = category.toLowerCase();
+      const categoryMap = {
+        software: "SOFTWARE",
+        hardware: "HARDWARE",
+        network: "NETWORK",
+        printer: "PRINTER",
+        email: "EMAIL",
+        other: "OTHER",
+        access: "OTHER",
+      };
+      updateData.category = categoryMap[normalizedCategory] || "OTHER";
+    }
 
-    const finalCategory = categoryMap[normalizedCategory] || "OTHER";
+    if (status !== undefined) {
+      const normalizedStatus = status.toUpperCase().replace(" ", "_");
+      const statusMap = {
+        OPEN: "OPEN",
+        IN_PROGRESS: "IN_PROGRESS",
+        RESOLVED: "RESOLVED",
+        CLOSED: "RESOLVED",
+        PENDING_VENDOR: "IN_PROGRESS",
+      };
+      updateData.status = statusMap[normalizedStatus] || "OPEN";
+    }
+
+    if (resolutionNote !== undefined) {
+      updateData.resolutionNote = resolutionNote;
+    }
+
+    if (uploadedFiles.length > 0) {
+      updateData.attachments = {
+        create: uploadedFiles.map((file) => ({
+          fileUrl: file.path,
+        })),
+      };
+    }
 
     const updatedTicket = await prisma.ticket.update({
       where: {
         id: ticketId,
       },
-      data: {
-        title,
-        description,
-        priority: finalPriority,
-        category: finalCategory,
-        attachments: {
-          create: uploadedFiles.map((file) => ({
-            fileUrl: file.path,
-          })),
-        },
-      },
+      data: updateData,
     });
 
     res.status(200).json({
@@ -234,6 +296,7 @@ export const updateTicket = async (req, res) => {
         priority: updatedTicket.priority,
         category: updatedTicket.category,
         status: updatedTicket.status,
+        resolutionNote: updatedTicket.resolutionNote,
       },
     });
   } catch (error) {

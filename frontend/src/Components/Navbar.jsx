@@ -1,4 +1,4 @@
-import { CircleUser, Menu, X } from "lucide-react";
+import { CircleUser, LogOut, Menu, X } from "lucide-react";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 
@@ -57,9 +57,10 @@ const Navbar = () => {
         </NavLink>
         <button
           onClick={handleLogout}
-          className="text-xs font-semibold uppercase tracking-wider text-red-500 hover:text-red-600 transition-colors cursor-pointer"
+          className="text-xs font-semibold  tracking-wider text-red-500 hover:text-red-600 transition-colors cursor-pointer flex flex-row items-center gap-2 rounded-lg border border-line bg-card hover:bg-danger/80 hover:text-white px-3 py-2.5 text-sm shadow-sm"
         >
-          Log Out
+          <LogOut size={16} />
+          <p>Log Out</p>
         </button>
       </div>
 

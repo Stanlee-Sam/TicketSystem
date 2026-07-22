@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
-import { Menu, ChevronLeft, ChevronRight, Home, Users, LogOut } from "lucide-react";
+import { Menu, ChevronLeft, ChevronRight, Home, Users, Building, LogOut } from "lucide-react";
 
 export default function Sidebar() {
   const handleLogout = () => {
@@ -23,6 +23,7 @@ export default function Sidebar() {
     { icon: <Home size={20} />, label: "Dashboard", to: "/dashboard" },
     { icon: <Users size={20} />, label: "Create User", to: "/create-user" },
     { icon: <Users size={20} />, label: "Manage Users", to: "/manage-users" },
+    { icon: <Building size={20} />, label: "Manage Departments", to: "/manage-departments" },
   ];
 
   const content = (

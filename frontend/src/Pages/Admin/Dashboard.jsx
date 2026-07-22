@@ -3,7 +3,6 @@ import { useState } from "react";
 // import { Eye, Edit, Filter, AlertCircle, CheckCircle, Inbox, AlertTriangle, Clock, Check, Plus } from "lucide-react";
 import Sidebar from "../../Components/Sidebar";
 import {
-  Plus,
   Inbox,
   AlertTriangle,
   Clock,
@@ -105,13 +104,19 @@ const Dashboard = () => {
   const [editingTicket, setEditingTicket] = useState(null);
   const [loading, setLoading] = useState(false);
   const [ticketMetrics, setTicketMetrics] = useState({});
+  const [modalStatus, setModalStatus] = useState("");
+  const [modalResolution, setModalResolution] = useState("");
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
+    setModalStatus(ticket.status || "OPEN");
+    setModalResolution(ticket.resolutionNote || "");
   };
 
   const editTicket = (ticket) => {
     setEditingTicket(ticket);
+    setModalStatus(ticket.status || "OPEN");
+    setModalResolution(ticket.resolutionNote || "");
   };
 
   const closeEditing = () => {
@@ -122,93 +127,110 @@ const Dashboard = () => {
     setSelectedTicket(null);
   };
 
-  useEffect(() => {
-    const fetchTickets = async () => {
-      try {
-        const response = await axios.get(`http://localhost:5000/ticket`);
-        const processedTickets = response.data.map((ticket) => {
-          // Format date and time
-          const date = new Date(ticket.createdAt);
-          const createdAt = date.toLocaleDateString("en-US", {
-            month: "short",
-            day: "numeric",
-            year: "numeric",
-          });
-          const createdTime = date.toLocaleTimeString("en-US", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-
-          // Priority class mapping
-          let priorityClass;
-          switch (ticket.priority) {
-            case "CRITICAL":
-              priorityClass = "text-danger";
-              break;
-            case "HIGH":
-              priorityClass = "text-danger-dark";
-              break;
-            case "MEDIUM":
-              priorityClass = "text-warning";
-              break;
-            case "LOW":
-            default:
-              priorityClass = "text-primary";
-              break;
-          }
-
-          // Status class mapping
-          let statusClass;
-          switch (ticket.status) {
-            case "OPEN":
-              statusClass = "bg-primary text-on-primary";
-              break;
-            case "IN_PROGRESS":
-              statusClass = "bg-warning-soft text-tertiary";
-              break;
-            case "RESOLVED":
-              statusClass = "bg-success text-on-primary";
-              break;
-            case "CLOSED":
-              statusClass = "bg-inverse text-on-inverse";
-              break;
-            default:
-              statusClass = "bg-secondary text-secondary";
-              break;
-          }
-
-          return {
-            ...ticket,
-            createdAt,
-            createdTime,
-            priorityClass,
-            statusClass,
-            id: ticket.id, 
-          };
+  const fetchTickets = async () => {
+    try {
+      const response = await axios.get(`http://localhost:5000/ticket`);
+      const processedTickets = response.data.map((ticket) => {
+        // Format date and time
+        const date = new Date(ticket.createdAt);
+        const createdAt = date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
         });
-        setTickets(processedTickets);
-      } catch (error) {
-        toast.error("Failed to fetch tickets:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+        const createdTime = date.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
 
-    fetchTickets();
-  }, []);
+        // Priority class mapping
+        let priorityClass;
+        switch (ticket.priority) {
+          case "CRITICAL":
+            priorityClass = "text-danger";
+            break;
+          case "HIGH":
+            priorityClass = "text-danger-dark";
+            break;
+          case "MEDIUM":
+            priorityClass = "text-warning";
+            break;
+          case "LOW":
+          default:
+            priorityClass = "text-primary";
+            break;
+        }
+
+        // Status class mapping
+        let statusClass;
+        switch (ticket.status) {
+          case "OPEN":
+            statusClass = "bg-primary text-on-primary";
+            break;
+          case "IN_PROGRESS":
+            statusClass = "bg-warning-soft text-tertiary";
+            break;
+          case "RESOLVED":
+            statusClass = "bg-success text-on-primary";
+            break;
+          case "CLOSED":
+            statusClass = "bg-inverse text-on-inverse";
+            break;
+          default:
+            statusClass = "bg-secondary text-secondary";
+            break;
+        }
+
+        return {
+          ...ticket,
+          createdAt,
+          createdTime,
+          priorityClass,
+          statusClass,
+          id: ticket.id,
+        };
+      });
+      setTickets(processedTickets);
+    } catch (error) {
+      toast.error("Failed to fetch tickets:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMetrics = async () => {
+    try {
+      const response = await axios.get(
+        `http://localhost:5000/ticket/metrics`,
+      );
+      setTicketMetrics(response.data);
+    } catch (error) {
+      toast.error("Failed to fetch ticket metrics:", error);
+    }
+  };
+
+  const handleUpdateTicket = async (ticketId) => {
+    try {
+      await axios.put(`http://localhost:5000/ticket/${ticketId}`, {
+        status: modalStatus,
+        resolutionNote: modalResolution,
+      });
+      toast.success("Ticket updated successfully!");
+      closeModal();
+      closeEditing();
+      fetchTickets();
+      fetchMetrics();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Failed to update ticket");
+    }
+  };
 
   useEffect(() => {
-    const fetchMetrics = async () => {
-      try {
-        const response = await axios.get(
-          `http://localhost:5000/ticket/metrics`,
-        );
-        setTicketMetrics(response.data);
-      } catch (error) {
-        toast.error("Failed to fetch ticket metrics:", error);
-      }
+    const init = async () => {
+      await fetchTickets();
+      await fetchMetrics();
     };
-    fetchMetrics();
+    init();
   }, []);
 
   return (
@@ -225,10 +247,6 @@ const Dashboard = () => {
                 Real-time status of hospital system support tickets.
               </p>
             </div>
-            <button className="bg-primary hover:bg-primary-soft text-white font-semibold py-2.5 px-6 rounded-lg flex items-center transition-all shadow-sm active:scale-95 cursor-pointer">
-              <Plus className="h-5 w-5 mr-2" />
-              Create New Ticket
-            </button>
           </div>
           <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-4">
             <div className="bg-card border border-line p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
@@ -491,12 +509,12 @@ const Dashboard = () => {
                     <div className="relative">
                       <select
                         className="cursor-pointer appearance-none rounded-lg border border-line-strong bg-card py-1 pl-3 pr-8 text-xs font-bold text-primary transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-                        defaultValue={selectedTicket.status}
+                        value={modalStatus}
+                        onChange={(e) => setModalStatus(e.target.value)}
                       >
-                        <option>OPEN</option>
-                        <option>IN PROGRESS</option>
-                        <option>PENDING VENDOR</option>
-                        <option>RESOLVED</option>
+                        <option value="OPEN">OPEN</option>
+                        <option value="IN_PROGRESS">IN PROGRESS</option>
+                        <option value="RESOLVED">RESOLVED</option>
                       </select>
                       <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-primary pointer-events-none h-5 w-5" />
                     </div>
@@ -552,13 +570,12 @@ const Dashboard = () => {
                           <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
                             Resolution Notes
                           </h3>
-                          <span className="text-[10px] font-semibold italic text-subtle">
-                            Auto-saving...
-                          </span>
                         </div>
                         <textarea
                           className="h-40 w-full resize-none rounded-lg border border-line-strong bg-card p-4 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
                           placeholder="Document steps taken, parts replaced, or vendor ticket IDs here..."
+                          value={modalResolution}
+                          onChange={(e) => setModalResolution(e.target.value)}
                         ></textarea>
                       </div>
                     </div>
@@ -642,6 +659,7 @@ const Dashboard = () => {
                     Cancel
                   </button>
                   <button
+                    onClick={() => handleUpdateTicket(selectedTicket.id)}
                     className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95"
                     type="button"
                   >
@@ -700,13 +718,12 @@ const Dashboard = () => {
                     </span>
                     <select
                       className="mt-2 w-full rounded-lg border border-line-strong bg-card px-4 py-2.5 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-                      defaultValue={editingTicket.status}
+                      value={modalStatus}
+                      onChange={(e) => setModalStatus(e.target.value)}
                     >
-                      <option>OPEN</option>
-                      <option>IN PROGRESS</option>
-                      <option>PENDING VENDOR</option>
-                      <option>RESOLVED</option>
-                      <option>CLOSED</option>
+                      <option value="OPEN">OPEN</option>
+                      <option value="IN_PROGRESS">IN PROGRESS</option>
+                      <option value="RESOLVED">RESOLVED</option>
                     </select>
                   </label>
 
@@ -717,6 +734,8 @@ const Dashboard = () => {
                     <textarea
                       className="mt-2 h-32 w-full resize-none rounded-lg border border-line-strong bg-card px-4 py-3 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
                       placeholder="Document steps taken, parts replaced, or vendor ticket IDs here..."
+                      value={modalResolution}
+                      onChange={(e) => setModalResolution(e.target.value)}
                     />
                   </label>
                 </div>
@@ -730,6 +749,7 @@ const Dashboard = () => {
                     Cancel
                   </button>
                   <button
+                    onClick={() => handleUpdateTicket(editingTicket.id)}
                     className="flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-primary-soft active:scale-95"
                     type="button"
                   >

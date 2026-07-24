@@ -28,7 +28,8 @@ const validationSchema = Yup.object({
     .required("Role is required"),
   password: Yup.string()
     .trim()
-    .min(6, "Password must be at least 6 characters")
+    .min(8, "Password must be at least 8 characters")
+    .matches(/[A-Z]/, "Password must contain at least one uppercase letter")
     .required("Temporary password is required"),
 });
 

@@ -63,8 +63,8 @@ const Login = () => {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-4 py-8 font-body">
-      <div className="flex w-full max-w-6xl overflow-hidden rounded-xl bg-card shadow-xl lg:min-h-[680px]">
-        <section className="relative hidden flex-1 flex-col gap-8 overflow-hidden bg-card-soft p-8 lg:flex">
+      <div className="flex w-full max-w-6xl overflow-hidden rounded-xl bg-card shadow-xl ">
+        <section className="relative hidden flex-1 flex-col gap-3 overflow-hidden bg-card-soft p-5 lg:flex">
           <div className="z-10 flex max-w-md flex-col gap-4">
             <h1 className="font-heading text-3xl font-extrabold text-primary">
               Welcome to Clinical Systems Support
@@ -76,8 +76,8 @@ const Login = () => {
           </div>
           <div className="mt-auto flex min-h-0 flex-1 items-end justify-center">
             <img
-              alt="Clinical support staff using the hospital ticketing system"
-              className="h-full max-h-[440px] w-full rounded-lg object-cover object-center"
+              alt=""
+              className="h-full max-h-[400px] w-full rounded-lg object-cover object-center"
               src={Hero}
             />
           </div>
@@ -180,12 +180,12 @@ const Login = () => {
                     Remember me
                   </span>
                 </label>
-                <a
+                {/* <a
                   className="text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-soft"
                   href="#"
                 >
                   Forgot Password?
-                </a>
+                </a> */}
               </div>
 
               <button

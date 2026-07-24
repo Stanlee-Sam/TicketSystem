@@ -274,10 +274,10 @@ const MyTickets = () => {
             options={["All Priorities", "Critical", "High", "Medium", "Low"]}
           />
 
-          <button className="md:ml-auto flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-soft">
+          {/* <button className="md:ml-auto flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-soft">
             <ListFilter className="h-4 w-4" aria-hidden="true" />
             Advanced Filters
-          </button>
+          </button> */}
         </div>
 
         {loading ? (
@@ -386,7 +386,7 @@ const MyTickets = () => {
             <div className="flex flex-col items-center justify-between gap-4 border-t border-line bg-bg-soft px-6 py-4 sm:flex-row">
               <span className="text-sm text-muted">
                 Showing <span className="font-bold text-text">1 - 5</span> of{" "}
-                <span className="font-bold text-text">24</span> tickets
+                <span className="font-bold text-text">{tickets.length}</span> tickets
               </span>
               <div className="flex items-center gap-2">
                 <PageButton disabled icon={ChevronLeft} label="Previous page" />
@@ -557,10 +557,10 @@ const MyTickets = () => {
                         </span>
                       </div>
                     </div>
-                    <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5">
+                    {/* <button className="flex w-full items-center justify-center gap-2 rounded-lg border border-primary px-4 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5">
                       <MessageCircle className="h-5 w-5" />
                       Message Submitter
-                    </button>
+                    </button> */}
                   </div>
                   <div className="px-1">
                     <h3 className="mb-4 text-xs font-bold uppercase tracking-wider text-muted">

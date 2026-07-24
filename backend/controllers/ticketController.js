@@ -126,17 +126,6 @@ export const createTicket = async (req, res) => {
     const ticket = await prisma.$transaction(async (tx) => {
       const ticketNumber = await nextTicketNumber(tx);
 
-      const attachmentCreates = uploadedFiles
-        .map((file) => {
-          const fileUrl = file.path || file.secure_url || file.url;
-          if (!fileUrl) {
-            console.warn("Skipping upload attachment with no URL", { file });
-            return null;
-          }
-          return { fileUrl };
-        })
-        .filter(Boolean);
-
       return tx.ticket.create({
         data: {
           ticketNumber,
@@ -147,7 +136,9 @@ export const createTicket = async (req, res) => {
           status: "OPEN",
           submitterId,
           attachments: {
-            create: attachmentCreates,
+            create: uploadedFiles.map((file) => ({
+              fileUrl: file.path,
+            })),
           },
         },
       });
@@ -300,22 +291,11 @@ export const updateTicket = async (req, res) => {
     }
 
     if (uploadedFiles.length > 0) {
-      const attachmentCreates = uploadedFiles
-        .map((file) => {
-          const fileUrl = file.path || file.secure_url || file.url;
-          if (!fileUrl) {
-            console.warn("Skipping upload attachment with no URL", { file });
-            return null;
-          }
-          return { fileUrl };
-        })
-        .filter(Boolean);
-
-      if (attachmentCreates.length > 0) {
-        updateData.attachments = {
-          create: attachmentCreates,
-        };
-      }
+      updateData.attachments = {
+        create: uploadedFiles.map((file) => ({
+          fileUrl: file.path,
+        })),
+      };
     }
 
     const updatedTicket = await prisma.ticket.update({

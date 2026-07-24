@@ -48,7 +48,12 @@ const RaiseTicket = () => {
           formData.append(`images`, file);
         });
 
-        const response = await axios.post("http://localhost:5000/ticket", formData);
+        console.log("Submitting ticket with data:", { title: values.title, category: values.category, priority: values.priority });
+        const response = await axios.post("http://localhost:5000/ticket", formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
         toast.success("Ticket submitted successfully!");
         resetForm();
 
@@ -57,7 +62,7 @@ const RaiseTicket = () => {
         }
 
       } catch (error) {
-        toast.error(error.response?.data.message || "Something went wrong");
+        toast.error(error.response?.data?.message || error.response?.data?.details?.[0] || "Something went wrong");
       } finally {
         setSubmitting(false);
       }

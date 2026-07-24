@@ -39,6 +39,9 @@ const Dashboard = () => {
   const [ticketMetrics, setTicketMetrics] = useState({});
   const [modalStatus, setModalStatus] = useState("");
   const [modalResolution, setModalResolution] = useState("");
+  const [priorityFilter, setPriorityFilter] = useState("All Priorities");
+  const [departmentFilter, setDepartmentFilter] = useState("All Departments");
+  const [statusFilter, setStatusFilter] = useState("All Statuses");
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
@@ -142,6 +145,37 @@ const Dashboard = () => {
       toast.error("Failed to fetch ticket metrics:", error);
     }
   };
+
+  const normalizeDepartmentName = (departmentName) =>
+    departmentName
+      ?.toLowerCase()
+      .replace(/\s*\(.*\)/, "")
+      .trim();
+
+  const filteredTickets = tickets
+    .filter((ticket) => {
+      if (priorityFilter === "All Priorities") {
+        return true;
+      }
+      return ticket.priority === priorityFilter.toUpperCase();
+    })
+    .filter((ticket) => {
+      if (statusFilter === "All Statuses") {
+        return true;
+      }
+      return (
+        ticket.status === statusFilter.toUpperCase().replace(" ", "_")
+      );
+    })
+    .filter((ticket) => {
+      if (departmentFilter === "All Departments") {
+        return true;
+      }
+      return (
+        normalizeDepartmentName(ticket.submitter?.department?.name) ===
+        normalizeDepartmentName(departmentFilter)
+      );
+    });
 
   const handleUpdateTicket = async (ticketId) => {
     try {
@@ -249,14 +283,22 @@ const Dashboard = () => {
                 <span className="text-sm font-bold text-muted">Filter by:</span>
               </div>
               <div className="flex flex-col md:flex-row gap-3 items-start md:items-center w-full md:w-auto">
-                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
+                <select
+                  className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5"
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                >
                   <option>All Priorities</option>
                   <option>Critical</option>
                   <option>High</option>
                   <option>Medium</option>
                   <option>Low</option>
                 </select>
-                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
+                <select
+                  className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5"
+                  value={departmentFilter}
+                  onChange={(e) => setDepartmentFilter(e.target.value)}
+                >
                   <option>All Departments</option>
                   <option>ER (Emergency)</option>
                   <option>Cardiology</option>
@@ -264,7 +306,11 @@ const Dashboard = () => {
                   <option>Radiology</option>
                   <option>Administration</option>
                 </select>
-                <select className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5">
+                <select
+                  className="bg-card border border-line-strong rounded-lg text-sm focus:ring-2 focus:ring-brand-soft focus:border-primary px-3 py-1.5"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
                   <option>All Statuses</option>
                   <option>Open</option>
                   <option>In Progress</option>
@@ -282,15 +328,15 @@ const Dashboard = () => {
               <div className="flex items-center justify-center h-[50dvh]">
                 <HashLoader color="#003c90" />
               </div>
-            ) : tickets.length === 0 ? (
+            ) : filteredTickets.length === 0 ? (
               <EmptyState
                 title="No tickets found"
-                description="There are no support tickets in the system at the moment."
+                description="There are no support tickets matching your filters."
               />
             ) : (
               <>
                 <div className="divide-y divide-line md:hidden">
-                  {tickets.map((ticket) => (
+                  {filteredTickets.map((ticket) => (
                     <TicketCard
                       onOpenModal={() => openModal(ticket)}
                       onUpdateTicket={() => editTicket(ticket)}
@@ -327,7 +373,7 @@ const Dashboard = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-line">
-                      {tickets.map((ticket) => (
+                      {filteredTickets.map((ticket) => (
                         <tr
                           className="transition-colors hover:bg-bg-soft cursor-pointer"
                           key={ticket.id}
@@ -392,8 +438,7 @@ const Dashboard = () => {
 
                 <div className="flex flex-col items-center justify-between gap-4 border-t border-line bg-bg-soft px-6 py-4 sm:flex-row">
                   <span className="text-sm text-muted">
-                    Showing <span className="font-bold text-text">1 - 5</span> of{" "}
-                    <span className="font-bold text-text">24</span> tickets
+                    Showing <span className="font-bold text-text">{filteredTickets.length}</span> ticket(s)
                   </span>
                   <div className="flex items-center gap-2">
                     <PageButton disabled icon={ChevronLeft} label="Previous page" />

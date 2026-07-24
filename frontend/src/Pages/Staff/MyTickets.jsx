@@ -22,7 +22,7 @@ import {
 import Navbar from "../../Components/Navbar";
 import EmptyState from "../../Components/EmptyState";
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { toast } from "sonner";
 import { HashLoader } from "react-spinners";
@@ -31,9 +31,70 @@ const MyTickets = () => {
   const [tickets, setTickets] = useState([]);
   const [selectedTicket, setSelectedTicket] = useState(null);
   const [loading, setLoading] = useState(false);
+  const previousTicketsRef = useRef([]);
+  const [notifications, setNotifications] = useState([]);
+
+  // Auto-dismiss notifications after 8s
+  useEffect(() => {
+    if (notifications.length === 0) return;
+    const timers = notifications.map((n) =>
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((p) => p.id !== n.id));
+      }, 8000),
+    );
+    return () => timers.forEach((t) => clearTimeout(t));
+  }, [notifications]);
 
   const openModal = (ticket) => {
     setSelectedTicket(ticket);
+  };
+
+  const formatStatusLabel = (status) => {
+    switch (status) {
+      case "OPEN":
+        return "Open";
+      case "IN_PROGRESS":
+        return "In Progress";
+      case "RESOLVED":
+        return "Resolved";
+      case "CLOSED":
+        return "Closed";
+      default:
+        return status;
+    }
+  };
+
+  const notifyTicketStatusChanges = (newTickets) => {
+    if (previousTicketsRef.current.length === 0) {
+      previousTicketsRef.current = newTickets;
+      return;
+    }
+
+    newTickets.forEach((ticket) => {
+      const previous = previousTicketsRef.current.find(
+        (prevTicket) => prevTicket.id === ticket.id,
+      );
+
+      if (previous && previous.status !== ticket.status) {
+        const message = `Ticket ${ticket.ticketNumber} is now ${formatStatusLabel(
+          ticket.status,
+        )}`;
+        // push a top-banner notification
+        setNotifications((prev) => [
+          { id: ticket.id + "-" + Date.now(), ticketId: ticket.id, message },
+          ...prev,
+        ]);
+        // small toast as well for compatibility
+        toast(message);
+
+        // If the ticket modal is open for this ticket, update it in-place
+        if (selectedTicket?.id === ticket.id) {
+          setSelectedTicket((prev) => ({ ...prev, status: ticket.status }));
+        }
+      }
+    });
+
+    previousTicketsRef.current = newTickets;
   };
 
   const closeModal = () => {
@@ -102,7 +163,23 @@ const MyTickets = () => {
           statusClass,
         };
       });
-      setTickets(processedTickets);
+      // Restrict to current user unless admin
+      let visibleTickets = processedTickets;
+      try {
+        const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+        const role = storedUser?.role;
+        if (storedUser && role !== "IT_ADMIN" && role !== "ADMIN") {
+          visibleTickets = processedTickets.filter(
+            (t) => t.submitter?.id === storedUser.id,
+          );
+        }
+      } catch (e) {
+        // ignore parse errors and show all tickets as a fallback
+        console.warn("Failed to parse stored user", e);
+      }
+
+      notifyTicketStatusChanges(visibleTickets);
+      setTickets(visibleTickets);
     } catch (error) {
       toast.error(error.response?.data?.message || "Failed to fetch tickets");
       console.error(error);
@@ -115,12 +192,46 @@ const MyTickets = () => {
     const init = async () => {
       await fetchTickets();
     };
+
     init();
+    const intervalId = setInterval(fetchTickets, 30000);
+    return () => clearInterval(intervalId);
   }, []);
 
   return (
     <div className="min-h-screen bg-bg font-body text-text mt-9">
       <Navbar />
+      {/* Top notification banner */}
+      {notifications.length > 0 && (
+        <div className="fixed top-4 left-1/2 z-50 -translate-x-1/2 w-full max-w-3xl px-4">
+          {notifications.map((n) => (
+            <div
+              key={n.id}
+              className="mb-2 rounded-lg border border-line bg-primary/95 p-3 text-white shadow-lg flex items-center justify-between"
+            >
+              <div className="text-sm font-medium">{n.message}</div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const ticket = tickets.find((t) => t.id === n.ticketId);
+                    if (ticket) openModal(ticket);
+                    setNotifications((prev) => prev.filter((p) => p.id !== n.id));
+                  }}
+                  className="rounded bg-white/10 px-3 py-1 text-xs font-semibold"
+                >
+                  View
+                </button>
+                <button
+                  onClick={() => setNotifications((prev) => prev.filter((p) => p.id !== n.id))}
+                  className="rounded bg-white/10 px-3 py-1 text-xs font-semibold"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <main className="flex flex-col gap-4 mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
         <div className="my-4 flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <h1 className="font-heading text-3xl font-bold text-text">

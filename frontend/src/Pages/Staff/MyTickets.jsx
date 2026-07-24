@@ -246,7 +246,8 @@ const MyTickets = () => {
           </Link>
         </div>
 
-        <div className="mb-4 flex flex-col gap-2 items-left md:flex-row md:items-center gap-4 rounded-lg border border-line bg-card p-4 shadow-sm">
+
+        {/* <div className="mb-4 flex flex-col gap-2 items-left md:flex-row md:items-center gap-4 rounded-lg border border-line bg-card p-4 shadow-sm">
           <div className="relative min-w-[260px] flex-1">
             <Search
               className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-subtle"
@@ -274,11 +275,8 @@ const MyTickets = () => {
             options={["All Priorities", "Critical", "High", "Medium", "Low"]}
           />
 
-          {/* <button className="md:ml-auto flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-primary transition-colors hover:text-primary-soft">
-            <ListFilter className="h-4 w-4" aria-hidden="true" />
-            Advanced Filters
-          </button> */}
-        </div>
+
+        </div> */}
 
         {loading ? (
           <div className="flex items-center justify-center h-[50dvh]">
@@ -315,13 +313,12 @@ const MyTickets = () => {
                       "Actions",
                     ].map((heading) => (
                       <th
-                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted ${
-                          ["Priority", "Status"].includes(heading)
+                        className={`px-6 py-4 text-xs font-semibold uppercase tracking-wider text-muted ${["Priority", "Status"].includes(heading)
                             ? "text-center"
                             : heading === "Actions"
                               ? "text-right"
                               : ""
-                        }`}
+                          }`}
                         key={heading}
                       >
                         {heading}
@@ -392,11 +389,10 @@ const MyTickets = () => {
                 <PageButton disabled icon={ChevronLeft} label="Previous page" />
                 {[1, 2, 3].map((page) => (
                   <button
-                    className={`h-8 w-8 rounded text-xs font-semibold transition-colors ${
-                      page === 1
+                    className={`h-8 w-8 rounded text-xs font-semibold transition-colors ${page === 1
                         ? "bg-primary text-on-primary"
                         : "text-muted hover:bg-card-muted"
-                    }`}
+                      }`}
                     key={page}
                     type="button"
                   >

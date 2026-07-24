@@ -34,6 +34,9 @@ export const loginUser = async (req, res) => {
       where: {
         email: email,
       },
+      include: {
+        department: true,
+      },
     });
 
     if (!user) {
@@ -54,6 +57,8 @@ export const loginUser = async (req, res) => {
         fullName: user.fullName,
         email: user.email,
         role: user.role,
+        department: user.department?.name || "",
+        mustChangePass: user.mustChangePass,
       },
     });
   } catch (error) {

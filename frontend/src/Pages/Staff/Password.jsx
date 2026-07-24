@@ -7,7 +7,10 @@ import {
   Save,
   ShieldCheck,
 } from "lucide-react";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
+import axios from "axios";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Password = () => {
   const [values, setValues] = useState({
@@ -20,6 +23,34 @@ const Password = () => {
     newPassword: false,
     confirmPassword: false,
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [user, setUser] = useState(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/me");
+        setUser(response.data);
+        if (response.data.role === "IT_ADMIN") {
+          navigate("/dashboard");
+          return;
+        }
+        if (!response.data.mustChangePass) {
+          navigate("/my-tickets");
+          return;
+        }
+      } catch (error) {
+        console.error("Failed to fetch current user:", error);
+        navigate("/");
+      } finally {
+        setLoadingUser(false);
+      }
+    };
+
+    fetchUser();
+  }, [navigate]);
 
   const requirements = useMemo(
     () => [
@@ -51,7 +82,10 @@ const Password = () => {
     values.confirmPassword.length === 0 ||
     values.newPassword === values.confirmPassword;
   const canSubmit =
-    values.currentPassword.length > 0 && strength === 4 && passwordsMatch;
+    values.currentPassword.length > 0 &&
+    strength === 4 &&
+    passwordsMatch &&
+    !isSubmitting;
 
   const updateValue = (event) => {
     const { name, value } = event.target;
@@ -62,9 +96,39 @@ const Password = () => {
     setVisible((current) => ({ ...current, [field]: !current[field] }));
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    if (!canSubmit) return;
+    if (loadingUser) return;
+    setIsSubmitting(true);
+
+    try {
+      await axios.put("http://localhost:5000/api/user/change-password", {
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
+      });
+
+      toast.success("Password updated successfully.");
+      setValues({ currentPassword: "", newPassword: "", confirmPassword: "" });
+      navigate("/my-tickets");
+    } catch (error) {
+      toast.error(
+        error.response?.data?.message || "Failed to update password.",
+      );
+      console.error(error);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (loadingUser) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-bg px-4 py-8 font-body">
+        <div className="text-center text-sm text-muted">Loading your account...</div>
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-bg px-4 py-8 font-body">
@@ -76,8 +140,7 @@ const Password = () => {
             </h1>
             <p className="text-[12px] leading-relaxed text-muted">
               As this is your first time logging in, please set a new secure
-              password for your account to ensure HIPAA compliance and system
-              security.
+              password for your account.
             </p>
           </div>
 
@@ -173,7 +236,7 @@ const Password = () => {
               type="submit"
             >
               <Save className="h-4 w-4" aria-hidden="true" />
-              Save New Password
+              {isSubmitting ? "Saving..." : "Save New Password"}
             </button>
           </form>
         </div>

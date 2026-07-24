@@ -1,8 +1,29 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Eye, LockKeyhole, Save, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import Navbar from "../../Components/Navbar";
 
 const Settings = () => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/user/me");
+        setUser(response.data);
+      } catch (error) {
+        console.error("Failed to load profile:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, []);
+
   return (
     <div className="min-h-screen bg-bg ">
       <Navbar />
@@ -34,7 +55,7 @@ const Settings = () => {
                   className="cursor-not-allowed rounded-lg border border-line bg-bg-soft px-4 py-2.5 text-sm text-muted"
                   readOnly
                   type="text"
-                  value="Dr. Sarah Jenkins"
+                  value={loading ? "Loading..." : user?.fullName || ""}
                 />
               </div>
 
@@ -46,7 +67,7 @@ const Settings = () => {
                   className="cursor-not-allowed rounded-lg border border-line bg-bg-soft px-4 py-2.5 text-sm text-muted"
                   readOnly
                   type="email"
-                  value="s.jenkins@wama-hospital.org"
+                  value={loading ? "Loading..." : user?.email || ""}
                 />
               </div>
 
@@ -54,13 +75,12 @@ const Settings = () => {
                 <label className="text-xs font-bold uppercase tracking-wider text-muted">
                   Department
                 </label>
-                <select className="rounded-lg border border-line-strong bg-card px-4 py-2.5 text-sm text-text transition-all focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft">
-                  <option>Information Technology</option>
-                  <option>Emergency Medicine</option>
-                  <option>Cardiology</option>
-                  <option>Nursing Administration</option>
-                  <option>Radiology</option>
-                </select>
+                <input
+                  className="cursor-not-allowed rounded-lg border border-line bg-bg-soft px-4 py-2.5 text-sm text-muted"
+                  readOnly
+                  type="text"
+                  value={loading ? "Loading..." : user?.department || ""}
+                />
               </div>
             </div>
           </section>
@@ -74,55 +94,30 @@ const Settings = () => {
             </div>
 
             <div className="flex flex-col gap-5 p-5">
-              <div className="grid grid-cols-1 gap-4">
-                <PasswordField id="current-pass" label="Current Password" />
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                  <PasswordField id="new-pass" label="New Password" />
-                  <PasswordField id="confirm-pass" label="Confirm New Password" />
-                </div>
-              </div>
+              {user?.role === "STAFF" && user?.mustChangePass ? (
+                <>
+                  <p className="text-sm text-secondary">
+                    Complete your initial password setup before proceeding.
+                  </p>
+                  <button
+                    onClick={() => navigate("/password-change")}
+                    className="w-full rounded-lg bg-primary px-8 py-3 text-sm font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-soft"
+                    type="button"
+                  >
+                    Complete Initial Password Setup
+                  </button>
+                </>
+              ) : (
+                <p className="text-sm text-secondary">
+                  Password changes are managed by your IT administrator after the initial setup.
+                </p>
+              )}
             </div>
           </section>
-
-          <div className="mt-2 flex flex-col-reverse items-center justify-end gap-4 md:flex-row">
-            <button className="w-full rounded-lg border border-primary px-8 py-2.5 text-sm font-semibold text-primary transition-colors hover:bg-primary/5 active:scale-95 md:w-auto">
-              Cancel
-            </button>
-            <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-8 py-2.5 text-sm font-semibold text-on-primary shadow-sm transition-all hover:bg-primary-soft active:scale-95 md:w-auto">
-              <Save className="h-5 w-5" />
-              Save Changes
-            </button>
-          </div>
         </div>
       </main>
     </div>
   );
 };
-
-const PasswordField = ({ id, label }) => (
-  <div className="flex flex-col gap-2">
-    <label
-      className="text-xs font-bold uppercase tracking-wider text-muted"
-      htmlFor={id}
-    >
-      {label}
-    </label>
-    <div className="relative">
-      <input
-        className="w-full rounded-lg border border-line-strong bg-card px-4 py-2.5 pr-12 text-sm text-text transition-all placeholder:text-subtle focus:border-primary focus:outline-none focus:ring-2 focus:ring-brand-soft"
-        id={id}
-        placeholder="Temporary password"
-        type="password"
-      />
-      <button
-        className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-muted transition-colors hover:text-primary"
-        type="button"
-      >
-        <Eye className="h-5 w-5" />
-      </button>
-    </div>
-  </div>
-);
 
 export default Settings;

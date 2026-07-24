@@ -30,7 +30,7 @@ const Login = () => {
     validationSchema: validationSchema,
     onSubmit: async (values, { setSubmitting, resetForm }) => {
       try {
-        const response = await axios.post(`http://localhost:5000/auth/login`, {
+        const response = await axios.post(`http://localhost:5000/api/auth/login`, {
           email: values.email,
           password: values.password,
         });
@@ -44,9 +44,10 @@ const Login = () => {
         await new Promise((resolve) => setTimeout(resolve, 1500));
         resetForm();
 
-        // Redirect based on role
         if (response.data.user?.role === "IT_ADMIN") {
           navigate("/dashboard");
+        } else if (response.data.user?.mustChangePass) {
+          navigate("/password-change");
         } else {
           navigate("/my-tickets");
         }

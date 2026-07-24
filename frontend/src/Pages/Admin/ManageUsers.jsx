@@ -32,11 +32,16 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("http://localhost:5000/user");
+      const response = await axios.get("http://localhost:5000/api/user");
       setUsers(response.data);
     } catch (error) {
-      toast.error("Failed to load users");
-      console.error(error);
+      const status = error.response?.status;
+      console.error("Failed to fetch users", { status, data: error.response?.data });
+      if (status === 401) {
+        toast.error("Unauthorized — please sign in as an admin");
+      } else {
+        toast.error("Failed to load users");
+      }
     } finally {
       setLoading(false);
     }
@@ -86,7 +91,7 @@ const ManageUsers = () => {
         payload.password = editPassword;
       }
 
-      await axios.put(`http://localhost:5000/user/${editingUser.id}`, payload);
+      await axios.put(`http://localhost:5000/api/user/${editingUser.id}`, payload);
       toast.success("User updated successfully!");
       setEditingUser(null);
       fetchUsers();
@@ -101,7 +106,7 @@ const ManageUsers = () => {
     }
 
     try {
-      await axios.delete(`http://localhost:5000/user/${userId}`);
+      await axios.delete(`http://localhost:5000/api/user/${userId}`);
       toast.success("User deleted successfully!");
       fetchUsers();
     } catch (error) {

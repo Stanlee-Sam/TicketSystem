@@ -326,7 +326,7 @@ export const changePassword = async (req, res) => {
       });
     }
 
-    const UserId = req.user.id;
+    const userId = req.user.userId;
     const { currentPassword, newPassword, confirmPassword } = value;
 
     if (newPassword !== confirmPassword) {
@@ -335,7 +335,7 @@ export const changePassword = async (req, res) => {
 
     const user = await prisma.user.findUnique({
       where: {
-        id: UserId,
+        id: userId,
       },
     });
 
@@ -355,10 +355,11 @@ export const changePassword = async (req, res) => {
 
     await prisma.user.update({
       where: {
-        id: UserId,
+        id: userId,
       },
       data: {
         passwordHash: newPassHash,
+        mustChangePass: false,
       },
     });
 
@@ -366,5 +367,31 @@ export const changePassword = async (req, res) => {
   } catch (error) {
     console.error("Error changing password:", error);
     res.status(500).json({ message: "Failed to change password" });
+  }
+};
+
+export const getCurrentUser = async (req, res) => {
+  try {
+    const userId = req.user.userId;
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { department: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      id: user.id,
+      fullName: user.fullName,
+      email: user.email,
+      role: user.role,
+      department: user.department?.name || "",
+      mustChangePass: user.mustChangePass,
+    });
+  } catch (error) {
+    console.error("Error fetching current user:", error);
+    res.status(500).json({ message: "Failed to fetch user" });
   }
 };

@@ -20,6 +20,20 @@ axios.interceptors.request.use(
   }
 );
 
+// Global response handler: on 401, clear session and redirect to login
+axios.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // redirect to login page
+      window.location.href = "/";
+    }
+    return Promise.reject(error);
+  },
+);
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <BrowserRouter>

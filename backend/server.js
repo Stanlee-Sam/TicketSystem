@@ -14,6 +14,7 @@ app.use(
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -22,8 +23,8 @@ app.get("/health", (req, res) => {
 });
 
 //routes
-app.use("/auth", loginRoute);
-app.use("/user", userRoute);
+app.use("/api/auth", loginRoute);
+app.use("/api/user", userRoute);
 app.use("/ticket", ticketRoute);
 app.use("/department", departmentRoute);
 

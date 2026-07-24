@@ -77,7 +77,7 @@ const CreateUser = () => {
         if (values.department) {
           payload.department = values.department;
         }
-        await axios.post("http://localhost:5000/user/create", payload);
+        await axios.post("http://localhost:5000/api/user/create", payload);
         toast.success("User created successfully!");
         resetForm();
       } catch (error) {

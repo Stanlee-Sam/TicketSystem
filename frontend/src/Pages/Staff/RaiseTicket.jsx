@@ -48,14 +48,7 @@ const RaiseTicket = () => {
           formData.append(`images`, file);
         });
 
-        const response = await axios.post(`http://localhost:5000/ticket`,
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        )
+        const response = await axios.post("http://localhost:5000/ticket", formData);
         toast.success("Ticket submitted successfully!");
         resetForm();
 

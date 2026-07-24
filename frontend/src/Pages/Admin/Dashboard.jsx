@@ -499,18 +499,31 @@ const Dashboard = () => {
                       </div>
                       <div className="space-y-2">
                         <h3 className="text-xs font-bold uppercase tracking-wider text-muted">
-                          Attached Media (1)
+                          Attached Media
                         </h3>
-                        <div className="group relative h-48 w-48 cursor-zoom-in overflow-hidden rounded-lg border border-line">
-                          <img
-                            alt="Monitor sync issue illustration"
-                            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                            src="https://lh3.googleusercontent.com/aida/AP1WRLs9-57llaoX4zvt-rnyixUuvjEU2-ljT181dN4FR2Fn7EM5Hee8tkCMaxorLz5ngKLDDKtPSfQDRzQsbFdduVqLb9hROgoHbze6h4xo80_WAXYBPEx-qJy4l9ChHZl6sHVTlunHrAcYBr9A4VnA3sYIIUGMaCqElAM537KxwqTWdxzzGI7IEyygl2CwWj47PXPvipI7UdQbb9cSGKroDm5ASlxAaKjHm-W7echFgkeMEXHzX_sAGLvAjOI"
-                          />
-                          <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <ZoomIn className="text-white h-8 w-8" />
+                        {selectedTicket.attachments?.length > 0 ? (
+                          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                            {selectedTicket.attachments.map((attachment) => (
+                              <div
+                                key={attachment.id}
+                                className="group relative h-48 overflow-hidden rounded-lg border border-line"
+                              >
+                                <img
+                                  alt="Ticket attachment"
+                                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                  src={attachment.fileUrl}
+                                />
+                                <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                  <ZoomIn className="text-white h-8 w-8" />
+                                </div>
+                              </div>
+                            ))}
                           </div>
-                        </div>
+                        ) : (
+                          <div className="rounded-lg border border-line bg-bg-soft p-4 text-sm text-muted">
+                            No attachments were included with this ticket.
+                          </div>
+                        )}
                       </div>
                       <div className="space-y-2">
                         <div className="flex justify-between items-end">
@@ -537,26 +550,30 @@ const Dashboard = () => {
                           </div>
                           <div className="flex flex-col">
                             <span className="font-semibold text-text">
-                              Dr. Sarah Chen
+                              {selectedTicket.submitter?.fullName || "Unknown Staff"}
                             </span>
                             <span className="text-sm text-muted">
-                              Attending Physician
+                              {selectedTicket.submitter?.role || "Staff"}
                             </span>
                           </div>
                         </div>
                         <div className="space-y-2 pt-1">
                           <div className="flex items-center gap-2 text-muted">
                             <Mail className="h-5 w-5" />
-                            <span className="text-sm">s.chen@medtech.org</span>
+                            <span className="text-sm">
+                              {selectedTicket.submitter?.email || "No email provided"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-muted">
                             <Phone className="h-5 w-5" />
-                            <span className="text-sm">Ext. 4492 (ER Hub)</span>
+                            <span className="text-sm">
+                              {selectedTicket.submitter?.department?.name || "No department"}
+                            </span>
                           </div>
                           <div className="flex items-center gap-2 text-muted">
                             <MapPin className="h-5 w-5" />
                             <span className="text-sm">
-                              Trauma Wing, Level 1
+                              Submitted by {selectedTicket.submitter?.fullName || "the ticket owner"}
                             </span>
                           </div>
                         </div>
